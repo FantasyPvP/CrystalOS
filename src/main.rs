@@ -39,6 +39,7 @@ fn main(boot_info: &'static BootInfo) -> ! {
 	println!("Starting <CrystalOS> ...");
 	CrystalOS::init();
 
+	print!("Initialising Memory Heap ...   ");
 	let physical_memory_offset = VirtAddr::new(boot_info.physical_memory_offset);
 	let mut mapper = unsafe { memory::init(physical_memory_offset) };
 
@@ -46,15 +47,17 @@ fn main(boot_info: &'static BootInfo) -> ! {
 		BootInfoFrameAllocator::init(&boot_info.memory_map)
 	};
 	allocator::init_heap(&mut mapper, &mut frame_allocator).expect("heap initialisation failed");
-	
+	println!("OK");
+	print!("Initialising Asynchronous Process Manager...   ");
 	let mut executor = Executor::new();
 	executor.spawn(Task::new(get_addition(5, 9)));
 	executor.spawn(Task::new(keyboard::print_keypresses()));
-
 	
+	println!("OK");
+	println!("\nRunning Tasks...");
 	executor.run();
 	
-	println!("ayyo");
+	println!("Welcome To CrystalOS!");
 
 	#[cfg(test)]
 	test_main();
