@@ -9,7 +9,7 @@ use futures_util::task::AtomicWaker;
 use futures_util::stream::StreamExt;
 use pc_keyboard::{layouts, DecodedKey, HandleControl, Keyboard, ScancodeSet1};
 use crate::print;
-
+use crate::applications::shell::CMD;
 
 static WAKER: AtomicWaker = AtomicWaker::new();
 static SCANCODE_QUEUE: OnceCell<ArrayQueue<u8>> = OnceCell::uninit();
@@ -24,7 +24,10 @@ pub async fn print_keypresses() {
 		if let Ok(Some(key_event)) = keyboard.add_byte(scancode) {
 			if let Some(key) = keyboard.process_keyevent(key_event) {
 				match key {
-					DecodedKey::Unicode(character) => print!("{}", character),
+					DecodedKey::Unicode(character) => {
+						let mut cmd = CMD.lock();
+						cmd.input(character);
+					}
 					DecodedKey::RawKey(key) => print!("{:?}", key),
 				}
 			}

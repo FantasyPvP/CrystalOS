@@ -61,8 +61,6 @@ fn main(boot_info: &'static BootInfo) -> ! {
 
 	#[cfg(test)]
 	test_main();
-	
-	CrystalOS::hlt();
 }
 
 

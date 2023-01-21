@@ -17,6 +17,7 @@ pub mod gdt;
 pub mod memory;
 pub mod allocator;
 pub mod tasks;
+pub mod applications;
 extern crate alloc;
 
 #[cfg(test)]
