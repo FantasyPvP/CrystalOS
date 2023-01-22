@@ -22,7 +22,7 @@ tutorial, i obviously still dont have access to a standard library, however i ca
 use Vectors and Strings now which are important types, as well as the fact that i have access
 to async and heap allocation
 
-## my aims for the project:
+### my aims going forwards:
 
 - whenever i have the chance to work on this project, i want to try and implement a new utility
 which could be useful or cool for anyone using the operating system.
