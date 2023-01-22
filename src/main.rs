@@ -5,12 +5,13 @@
 #![reexport_test_harness_main = "test_main"]
 
 use core::panic::PanicInfo;
-use CrystalOS::{println, print};
+use CrystalOS::{println, print, println_log, print_log};
 use CrystalOS::tasks::{Task, executor::Executor, keyboard};
 use bootloader::{BootInfo, entry_point};
 extern crate alloc;
 use alloc::{boxed::Box, vec, vec::Vec, rc::Rc, string, string::String};
-
+use CrystalOS::vga_buffer;
+use CrystalOS::applications::shell;
 
 #[cfg(not(test))]
 #[panic_handler]
@@ -36,29 +37,34 @@ fn main(boot_info: &'static BootInfo) -> ! {
 	use CrystalOS::memory::BootInfoFrameAllocator;
 	use x86_64::{structures::paging::{Page, Translate}, VirtAddr};
 
-	println!("Starting <CrystalOS> ...");
+	println_log!("    [Starting CrystalOS]\n\n");
+	print_log!("CrystalOS::init...   ");
 	CrystalOS::init();
-
-	print!("Initialising Memory Heap ...   ");
+	println_log!("[OK]");
+ 
+	print_log!("CrystalOS::memory::init...   ");
 	let physical_memory_offset = VirtAddr::new(boot_info.physical_memory_offset);
 	let mut mapper = unsafe { memory::init(physical_memory_offset) };
-
 	let mut frame_allocator = unsafe {
 		BootInfoFrameAllocator::init(&boot_info.memory_map)
 	};
-	allocator::init_heap(&mut mapper, &mut frame_allocator).expect("heap initialisation failed");
-	println!("OK");
-	print!("Initialising Asynchronous Process Manager...   ");
-	let mut executor = Executor::new();
-	executor.spawn(Task::new(get_addition(5, 9)));
-	executor.spawn(Task::new(keyboard::print_keypresses()));
+	println_log!("[OK]");
 	
-	println!("OK");
-	println!("\nRunning Tasks...");
+	print_log!("CrystalOS::allocator::init...   ");
+	allocator::init_heap(&mut mapper, &mut frame_allocator).expect("heap initialisation failed");
+	println_log!("[OK]");
+	
+	print_log!("CrystalOS::tasks::executor...   ");
+	let mut executor = Executor::new();
+	println_log!("[OK]");
+
+	print_log!("CrystalOS::applications::shell::command_handler...   ");
+	executor.spawn(Task::new(shell::command_handler()));
+	println_log!("[OK]");
+	
+	println_log!("Welcome To CrystalOS!");
 	executor.run();
 	
-	println!("Welcome To CrystalOS!");
-
 	#[cfg(test)]
 	test_main();
 }

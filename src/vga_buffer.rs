@@ -120,7 +120,7 @@ use spin::Mutex;
 lazy_static! {
 	pub static ref WRITER: Mutex<Writer> = Mutex::new(Writer {
 		col_pos: 0,
-		col_code: ColorCode::new(Color::Yellow, Color::Black),
+		col_code: ColorCode::new(Color::White, Color::Black),
 		buffer: unsafe {
 			&mut *(0xb8000 as *mut Buffer)
 		},
@@ -138,16 +138,47 @@ macro_rules! print {
 	($($arg:tt)*) => ($crate::vga_buffer::_print(format_args!($($arg)*)));
 }
 
+#[macro_export]
+macro_rules! println_log {
+	() => ($crate::print_log!("/n"));
+	($($arg:tt)*) => ($crate::print_log!("{}\n", format_args!($($arg)*)));
+}
+
+#[macro_export]
+macro_rules! print_log {
+	($($arg:tt)*) => ($crate::vga_buffer::_log(format_args!($($arg)*)));
+}
+
+
 #[doc(hidden)]
 pub fn _print(args: fmt::Arguments) {
 	use core::fmt::Write;
 	use x86_64::instructions::interrupts;
 
 	interrupts::without_interrupts(|| {
-		WRITER.lock().write_fmt(args).unwrap();
-	})
-
+		let mut writer = WRITER.lock();
+		writer.col_code = ColorCode::new(Color::White, Color::Black);
+		writer.write_fmt(args).unwrap();
+		
+		//WRITER.lock().write_fmt(args).unwrap();
+	});
 }
+
+#[doc(hidden)]
+pub fn _log(args: fmt::Arguments) {
+	use core::fmt::Write;
+	use x86_64::instructions::interrupts;
+
+	interrupts::without_interrupts(|| {
+		let mut writer = WRITER.lock();
+		writer.col_code = ColorCode::new(Color::Yellow, Color::Black);
+		writer.write_fmt(args).unwrap();
+		
+		//WRITER.lock().write_fmt(args).unwrap();
+	});
+}
+
+
 
 #[test_case]
 fn check_println_out() {
