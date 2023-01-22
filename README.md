@@ -61,7 +61,7 @@ or alias.
 
 ## Phase 3: CrystalAPI
 
-## the basics:
+# the basics:
 
 the crystal api will essentially be a standard library for any programs that are run by the shell
 - it provides basic functions such as waiting for a keystroke or string to be entered by the user
