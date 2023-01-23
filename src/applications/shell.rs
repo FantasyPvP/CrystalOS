@@ -1,9 +1,14 @@
+
 use async_trait::async_trait;
 use lazy_static::lazy_static;
 use crate::{println, print, alloc::string::ToString};
 use alloc::{string::String, vec::Vec, boxed::Box, rc::Rc};
 use spin::Mutex;
-use crate::applications::calc;
+use crate::applications::{
+	calc::Calculator,
+	rickroll::Rickroll,
+	crystalfetch::CrystalFetch,
+};
 use crate::tasks::keyboard::ScanCodeStream;
 use pc_keyboard::{layouts, DecodedKey, HandleControl, Keyboard, ScancodeSet1};
 use futures_util::stream::StreamExt;
@@ -25,6 +30,10 @@ pub async fn command_handler() {
 /// TODO: implement shutdown command
 pub async fn eventloop() {
 	println!("running!");
+
+	let mut fetch = CrystalFetch::new();
+	fetch.run(String::from("e")).await;
+	
 	CMD.lock().prompt();		
 	
 	loop {
@@ -44,24 +53,39 @@ async fn exec() -> Result<(), Error> {
 	current.pop();
 	CMD.lock().current = String::new();
 
+
+
 	let (cmd, args) = match current.split_once(" ") {
 		Some((x,y)) => { command = true; (x,y.to_string()) },
 		None => ("none", "none".to_string()),
 	};
-	println!("ok");
+
+	
 	if command == true {
 		match cmd {
-			"calculate"|"calc"|"solve" => { calc::calculate(args.to_string()); },
+			"calculate"|"calc"|"solve" => {
+				let mut cmd = Calculator::new();
+				cmd.run(args).await;
+			},
 			"echo" => { println!("Crystal: '{}'", args) },
+			
 			"rickroll" => {
 				let mut cmd = Rickroll::new();
 				cmd.run(args).await;
 			}
+			
+			"crystalfetch" => {
+				let mut cmd = CrystalFetch::new();
+				cmd.run(args).await;
+			}
+			
 			_ => { println!("this command has not been implemented yet!"); },
 		};
 	} else {
 		println!("this command does not exist! (or too few arguments supplied)")
 	}
+
+	
 	Ok(())
 }
 
@@ -92,13 +116,13 @@ impl CommandHandler {
 	// this function is activated every time the user presses a key on the keyboard
 	// it accesses the queue of keys (a static ref in src/tasks/keyboard.rs)
 
-	async fn get_keystroke(&mut self) -> char {
+	pub async fn get_keystroke(&mut self) -> char {
 		loop {
 			if let Some(scancode) = self.scancodes.next().await {
 				if let Ok(Some(key_event)) = self.keyboard.add_byte(scancode) {
 					if let Some(key) = self.keyboard.process_keyevent(key_event) {
 						match key {
-							DecodedKey::Unicode(character) => { print!("{}", character); return character},
+							DecodedKey::Unicode(character) => { return character },
 							DecodedKey::RawKey(key) => print!("{:?}", key),
 						}
 					}
@@ -107,10 +131,11 @@ impl CommandHandler {
 		}
 	}
 
-	async fn get_string(&mut self) -> String {
+	pub async fn get_string(&mut self) -> String {
 		let mut val = String::new();
 		loop {
 			let character = self.get_keystroke().await;
+			print!("{}", character);
 			let (character, execute): (char, bool) = match character {
 				'\n' => (character, true),
 				_ => (character, false),
@@ -127,8 +152,8 @@ impl CommandHandler {
 	// this is a separate function so that it can be developed as necessary later on
 	// TODO: coloured prompt
 	
-	fn prompt(&self) {
-		print!(" Crystal>> ");
+	pub fn prompt(&self) {
+		print!("\n [Crystal] >> ");
 	}
 	
 	
@@ -158,35 +183,6 @@ pub trait Application {
 	async fn keystroke(&mut self) -> char;
 
 	async fn run(&mut self, args: String) -> Result<(), Error> {
-		Ok(())
-	}
-}
-
-
-struct Rickroll {}
-
-#[async_trait]
-impl Application for Rickroll {
-	fn new() -> Self {
-		Self {}
-	}
-
-	async fn input(&mut self) -> String {
-		let mut string = CMD.lock().get_string().await;
-		string.pop();
-		string
-	}
-	
-	async fn keystroke(&mut self) -> char {
-		CMD.lock().get_keystroke().await
-	}
-
-
-
-	async fn run(&mut self, args: String) -> Result<(), Error> {
-		let stdin = self.input().await;
-		let char = self.keystroke().await;
-		println!("hi from rickroll: {} {}", stdin, char);
 		Ok(())
 	}
 }

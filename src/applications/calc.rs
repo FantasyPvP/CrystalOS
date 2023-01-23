@@ -4,6 +4,13 @@ use alloc::string::ToString;
 use alloc::borrow::ToOwned;
 use crate::{println, mknode};
 
+use async_trait::async_trait;
+use crate::applications::shell::{
+	CMD,
+	Application,
+	Error as ShellError
+};
+
 struct Parser {
     tokens: Vec<Token>,
     idx: i32,
@@ -318,32 +325,44 @@ macro_rules! mknode {
 
 
 
+pub struct Calculator {}
 
-
-pub fn calculate(mut equation: String) -> f64 {
-    match calculate_inner(equation) {
-        Ok(x) => x,
-        Err(x) => { println!("calculator failed: {:?}", x); 0.0 },
-    }
+#[async_trait]
+impl Application for Calculator {
+	fn new() -> Self {
+		Self {}
+	}
+	async fn input(&mut self) -> String {
+		CMD.lock().get_string().await
+	}
+	async fn keystroke(&mut self) -> char {
+		CMD.lock().get_keystroke().await
+	}
+	async fn run(&mut self, equation: String) -> Result<(), ShellError> {
+	    match calculate_inner(equation) {
+	        Ok(x) => x,
+	        Err(x) => { println!("your input must be a valid mathematical expression contaning only numbers (including floats) and the operators: [ +, -, *, **, /, //, % ]"); return Err(ShellError::CommandFailed(String::from("failed"))) },
+	    };
+		Ok(())
+	}
 }
 
 
 fn calculate_inner(mut equation: String) -> Result<f64, Error> {
 
 	equation.push('\n');
-	println!("CrystalOS::applications::calculate: {}", equation);
+	let mut neweq = equation.clone();
+	neweq.pop();
 
 
     let tokens = tokenise(&equation)?;
 
-    let mut parser = Parser::new(tokens.clone())?;
+    let mut parser = Parser::new(tokens)?;
     let ast = parser.parse()?;
 
 
     let mut interpreter = Interpreter::new()?;
-    let result = interpreter.visit(ast.clone())?;
-
-    println!("output : {:?}", result);
+    let result = interpreter.visit(ast)?;
 
 	let return_res = {
 		if let Value::Number(x) = result {
@@ -351,9 +370,30 @@ fn calculate_inner(mut equation: String) -> Result<f64, Error> {
 		} else {
 			panic!("did not return a float!");
 		}
-
 	};
-    return Ok(return_res)
+	println!("\n\n
+   _____                _        _ 
+  / ____|              | |      | |
+ | |     _ __ _   _ ___| |_ __ _| |
+ | |    | '__| | | / __| __/ _` | |
+ | |____| |  | |_| \\__ \\ || (_| | |
+  \\_____|_|   \\__, |___/\\__\\__,_|_|
+        _____  __/ |               
+       / ____||___/ |              
+      | |     __ _| | ___          
+      | |    / _` | |/ __|         
+      | |___| (_| | | (__          
+       \\_____\\__,_|_|\\___|    
+
+
+    |                                     
+    |    Expression -> [ {} ]                            
+    |                                      
+    |    Calculated Solution -> [ {} ]                             
+    |\n
+    ", neweq, return_res);
+
+    Ok(return_res)
 }
 
 

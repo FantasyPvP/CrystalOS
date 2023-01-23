@@ -6,6 +6,7 @@ use lazy_static::lazy_static;
 use spin;
 use pic8259::ChainedPics;
 
+
 pub fn init_idt() {
 	IDT.load();
 }
@@ -20,6 +21,7 @@ extern "x86-interrupt" fn double_fault_handler(stack_frame: InterruptStackFrame,
 
 extern "x86-interrupt" fn timer_interrupt_handler(stack_frame: InterruptStackFrame) {
 	unsafe {
+		GLOBALTIMER.lock().inc();
 		PICS.lock().notify_end_of_interrupt(InterruptIndex::Timer.as_u8());
 	}
 }
@@ -61,6 +63,28 @@ lazy_static! {
 		idt
 	};
 }
+
+lazy_static! {
+	pub static ref GLOBALTIMER: spin::Mutex<Timer> = spin::Mutex::new(Timer::new());
+}
+
+pub struct Timer {
+	pub val: i64
+}
+
+impl Timer {
+	pub fn new() -> Self {
+		Self { val:  0 }
+	}
+	pub fn inc(&mut self) {
+		self.val += 1
+	}
+	pub fn clear(&mut self) {
+		self.val = 0
+	}
+}
+
+
 
 #[test_case]
 fn test_breakpoint_exception() {

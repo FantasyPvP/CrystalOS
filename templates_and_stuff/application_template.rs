@@ -55,6 +55,10 @@ impl App { // name must be the same as the name of the struct
         self.handler.input()
     }
 
+    fn keystroke(&mut self) -> String {
+    	self.handler.input()
+    }
+
     fn run(&mut self, args: String) -> Result<(), String> { /*
         this represents your actual main function
         write all the code for your program starting here

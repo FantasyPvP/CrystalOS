@@ -19,6 +19,7 @@ pub mod allocator;
 pub mod tasks;
 pub mod applications;
 extern crate alloc;
+//extern crate fatfs;
 
 #[cfg(test)]
 use bootloader::{entry_point, BootInfo};
