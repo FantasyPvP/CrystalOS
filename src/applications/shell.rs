@@ -7,15 +7,67 @@ use crate::applications::calc;
 use crate::tasks::keyboard::ScanCodeStream;
 use pc_keyboard::{layouts, DecodedKey, HandleControl, Keyboard, ScancodeSet1};
 use futures_util::stream::StreamExt;
+use crate::alloc::borrow::ToOwned;
 
 lazy_static! {
 	pub static ref CMD: Mutex<CommandHandler> = Mutex::new(CommandHandler::new());
 }
 
+
+/// boilerplate function
+/// may provide other interfacing options later on idk.
 pub async fn command_handler() {
-	let mut cmd = CMD.lock();
-	cmd.run().await;
+	eventloop().await;
 }
+
+
+/// this function starts the shell running, the function will loop repeatedly until the command to shutdown
+/// TODO: implement shutdown command
+pub async fn eventloop() {
+	println!("running!");
+	CMD.lock().prompt();		
+	
+	loop {
+		let string = CMD.lock().get_string().await;
+		CMD.lock().current.push_str(&string);
+		exec().await;
+		CMD.lock().prompt();
+	}
+}
+
+async fn exec() -> Result<(), Error> {
+	let mut command = false;
+	let mut current = CMD.lock().current.clone();
+	
+	CMD.lock().history.history.push(current.clone());
+
+	current.pop();
+	CMD.lock().current = String::new();
+
+	let (cmd, args) = match current.split_once(" ") {
+		Some((x,y)) => { command = true; (x,y.to_string()) },
+		None => ("none", "none".to_string()),
+	};
+	println!("ok");
+	if command == true {
+		match cmd {
+			"calculate"|"calc"|"solve" => { calc::calculate(args.to_string()); },
+			"echo" => { println!("Crystal: '{}'", args) },
+			"rickroll" => {
+				let mut cmd = Rickroll::new();
+				cmd.run(args).await;
+			}
+			_ => { println!("this command has not been implemented yet!"); },
+		};
+	} else {
+		println!("this command does not exist! (or too few arguments supplied)")
+	}
+	Ok(())
+}
+
+
+
+
 
 pub struct CommandHandler {
 	current: String,
@@ -35,29 +87,8 @@ impl CommandHandler {
 		handler
 	}
 
-	// this function starts the shell running, the function will loop repeatedly until the command to shutdown
-	// TODO: implement shutdown command
-		
-	pub async fn run(&mut self) {
-		println!("running!");
-		self.prompt();
-		
-		loop {
-			let character = self.get_keystroke().await;
-			print!("{}", &character);
-			let (character, execute): (char, bool) = match character {
-				'\n' => (character, true),
-				_ => (character, false),
-			};
-			self.current.push(character);
-			
-			if execute {
-				self.execute().await;
-				self.prompt();
-			}
-		}
-	}
 
+		
 	// this function is activated every time the user presses a key on the keyboard
 	// it accesses the queue of keys (a static ref in src/tasks/keyboard.rs)
 
@@ -67,13 +98,29 @@ impl CommandHandler {
 				if let Ok(Some(key_event)) = self.keyboard.add_byte(scancode) {
 					if let Some(key) = self.keyboard.process_keyevent(key_event) {
 						match key {
-							DecodedKey::Unicode(character) => return character,
+							DecodedKey::Unicode(character) => { print!("{}", character); return character},
 							DecodedKey::RawKey(key) => print!("{:?}", key),
 						}
 					}
 				}
 			}			
 		}
+	}
+
+	async fn get_string(&mut self) -> String {
+		let mut val = String::new();
+		loop {
+			let character = self.get_keystroke().await;
+			let (character, execute): (char, bool) = match character {
+				'\n' => (character, true),
+				_ => (character, false),
+			};	
+			val.push(character);
+			if execute {
+				return val;
+			} 			
+		}
+
 	}
 
 	// displays a text prompt for the user to type into.
@@ -87,34 +134,7 @@ impl CommandHandler {
 	
 	// this function is run every time the enter key is pressed in the command line mode.
 	// it detects the command that is being run and then executes it, passing the arguments to it.
-	async fn execute(&mut self) -> Result<(), Error> {
-		let mut command = false;
 
-		self.history.history.push(self.current.clone());
-		let mut current = self.current.clone();
-		current.pop();
-		self.current = String::new();
-
-		let (cmd, args) = match current.split_once(" ") {
-			Some((x,y)) => { command = true; (x,y.to_string()) },
-			None => ("none", "none".to_string()),
-		};
-
-		if command == true {
-			match cmd {
-				"calculate"|"calc"|"solve" => { calc::calculate(args.to_string()); },
-				"echo" => { println!("Crystal: '{}'", args) },
-				"rickroll" => {
-					let mut cmd = Rickroll::new();
-					cmd.run(self, args).await;
-				}
-				_ => { println!("this command has not been implemented yet!"); },
-			};
-		} else {
-			println!("this command does not exist! (or too few arguments supplied)")
-		}
-		Ok(())
-	}
 }
 
 
@@ -123,6 +143,7 @@ struct CmdHistory {
 	history: Vec<String>,
 }
 
+#[derive(Debug)]
 pub enum Error {
 	UnknownCommand(String),
 	CommandFailed(String),
@@ -132,10 +153,11 @@ pub enum Error {
 pub trait Application {
 	fn new() -> Self;
 
-//	async fn input(&mut self) -> String;
+	async fn input(&mut self) -> String;
 
-	async fn run(&mut self, handler: &mut CommandHandler, args: String) -> Result<(), Error> {
-		
+	async fn keystroke(&mut self) -> char;
+
+	async fn run(&mut self, args: String) -> Result<(), Error> {
 		Ok(())
 	}
 }
@@ -149,13 +171,22 @@ impl Application for Rickroll {
 		Self {}
 	}
 
-//	async fn input(&mut self) -> String {
-//		handler.get_keystroke().await;
-//	}
+	async fn input(&mut self) -> String {
+		let mut string = CMD.lock().get_string().await;
+		string.pop();
+		string
+	}
+	
+	async fn keystroke(&mut self) -> char {
+		CMD.lock().get_keystroke().await
+	}
 
-	async fn run(&mut self, handler: &mut CommandHandler, args: String) -> Result<(), Error> {
-		let stdin = handler.get_keystroke().await;
-		println!("hi from rickroll: {:?}", stdin);
+
+
+	async fn run(&mut self, args: String) -> Result<(), Error> {
+		let stdin = self.input().await;
+		let char = self.keystroke().await;
+		println!("hi from rickroll: {} {}", stdin, char);
 		Ok(())
 	}
 }
