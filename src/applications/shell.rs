@@ -55,8 +55,6 @@ async fn exec() -> Result<(), Error> {
 	current.pop();
 	CMD.lock().current = String::new();
 
-
-
 	let (cmd, args) = match current.split_once(" ") {
 		Some((x,y)) => { command = true; (x,y.to_string()) },
 		None => ("none", "none".to_string()),
@@ -84,6 +82,11 @@ async fn exec() -> Result<(), Error> {
 				interrupts::without_interrupts(|| {
 						WRITER.lock().clear();
 				});
+			}
+			"print" => {
+				use crate::os::OS;
+				let x: String = OS.lock().version.clone();
+				println!("{}", x);
 			}
 			
 			_ => { println!("this command has not been implemented yet!"); },

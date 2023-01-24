@@ -4,6 +4,7 @@ use crate::applications::shell::{
 	Application,
 	Error,
 };
+use crate::os::OS;
 use crate::{print, println};
 use alloc::{boxed::Box, string::String, vec::Vec};
 use core::iter::repeat;
@@ -27,7 +28,10 @@ impl Application for CrystalFetch {
 
 	
 	async fn run(&mut self, args:String) -> Result<(), Error> {
-		//use crate::os::OS;
+
+		let os = OS.lock().os.clone();
+		let version = OS.lock().version.clone();
+	
 		write(format_args!("
    --------------------------------------
    
@@ -42,8 +46,8 @@ impl Application for CrystalFetch {
 "), (Color::Magenta, Color::Black));
 
 		println!("
-       |  OS     ->  CrystalOS Alpha
-       |  BUILD  ->  0.2.0         
+       |  OS     ->  {}
+       |  BUILD  ->  {}
        |  Host   ->  ArchLinux-QEMU  
        |  RAM    ->  idk              
        |  Shell  ->  CrystalSH        
@@ -52,7 +56,7 @@ impl Application for CrystalFetch {
        |  Fetch  ->  CrystalFetch
 
    ---------------------------------------
-"/*, OS.lock().os, OS.lock().version*/);
+", os, version);
 
 		println!("{}", "\n");
 		
