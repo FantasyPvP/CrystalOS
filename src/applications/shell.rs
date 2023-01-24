@@ -80,6 +80,11 @@ async fn exec() -> Result<(), Error> {
 				let mut cmd = CrystalFetch::new();
 				cmd.run(args).await;
 			}
+			"clear" => {
+				interrupts::without_interrupts(|| {
+						WRITER.lock().clear();
+				});
+			}
 			
 			_ => { println!("this command has not been implemented yet!"); },
 		};
@@ -118,18 +123,22 @@ impl CommandHandler {
 	// this function is activated every time the user presses a key on the keyboard
 	// it accesses the queue of keys (a static ref in src/tasks/keyboard.rs)
 
-	pub async fn get_keystroke(&mut self) -> char {
+	pub async fn get_keystroke_inner(&mut self) -> Option<char> {
 		loop {
 			if let Some(scancode) = self.scancodes.next().await {
 				if let Ok(Some(key_event)) = self.keyboard.add_byte(scancode) {
 					if let Some(key) = self.keyboard.process_keyevent(key_event) {
 						match key {
 							DecodedKey::Unicode(character) => { 
-								if character == '\b' {
-									WRITER.lock().backspace();
-									continue;
+								if character == b'\x08' as char { // checks if the character is a backspace
+									let mut failed = false;
+									interrupts::without_interrupts(|| {
+										WRITER.lock().backspace();
+									});
+									 // runs the backspace function of the vga buffer to remove the last character
+									return None;
 								} else {
-									return character;
+									return Some(character);
 								}
 							},
 							DecodedKey::RawKey(key) => { print!("{:?}", key) },
@@ -140,10 +149,23 @@ impl CommandHandler {
 		}
 	}
 
+	pub async fn get_keystroke(&mut self) -> char {
+		loop {
+			match self.get_keystroke_inner().await {
+				Some(c) => return c,
+				None => ()
+			}
+		}
+	}
+
+
 	pub async fn get_string(&mut self) -> String {
 		let mut val = String::new();
 		loop {
-			let character = self.get_keystroke().await;
+			let character = match self.get_keystroke_inner().await {
+				Some(c) => { c },
+				None => { val.pop(); continue; },
+			};
 			print!("{}", character);
 			let (character, execute): (char, bool) = match character {
 				'\n' => (character, true),

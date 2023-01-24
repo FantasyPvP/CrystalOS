@@ -13,6 +13,8 @@ pub struct CrystalFetch {}
 
 #[async_trait]
 impl Application for CrystalFetch {
+
+
 	fn new() -> Self {
 		Self {}
 	}
@@ -25,7 +27,7 @@ impl Application for CrystalFetch {
 
 	
 	async fn run(&mut self, args:String) -> Result<(), Error> {
-	
+		//use crate::os::OS;
 		write(format_args!("
    --------------------------------------
    
@@ -38,9 +40,10 @@ impl Application for CrystalFetch {
                 __/ |                             
                |___/                              
 "), (Color::Magenta, Color::Black));
+
 		println!("
-       |  OS     ->  CrystalOS-ALPHA  
-       |  BUILD  ->  0.1.1            
+       |  OS     ->  CrystalOS Alpha
+       |  BUILD  ->  0.2.0         
        |  Host   ->  ArchLinux-QEMU  
        |  RAM    ->  idk              
        |  Shell  ->  CrystalSH        
@@ -49,8 +52,9 @@ impl Application for CrystalFetch {
        |  Fetch  ->  CrystalFetch
 
    ---------------------------------------
-");
-		println!("{}", "\n".repeat(1));
+"/*, OS.lock().os, OS.lock().version*/);
+
+		println!("{}", "\n");
 		
 		Ok(())
 	}

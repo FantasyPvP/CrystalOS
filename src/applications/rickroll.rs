@@ -32,7 +32,7 @@ impl Application for Rickroll {
 
 	async fn run(&mut self, args: String) -> Result<(), Error> {
 		println!("
-		
+
   _   _                        _____                         
  | \\ | |                      / ____|                        
  |  \\| | _____   _____ _ __  | |  __  ___  _ __  _ __   __ _ 

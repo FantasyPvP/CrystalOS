@@ -65,18 +65,20 @@ impl Writer {
 			}
 		}
 	}
-	pub fn backspace(&mut self) {
-		let row = BUFFER_HEIGHT -1;
-		let col = self.col_pos;
+	pub fn backspace(&mut self) -> Result<(), ()> {
 		if self.col_pos == 0 {
 			self.undonewline();
-		}
-		let blank = ScreenChar {
-            character: b' ',
-            colour: self.col_code,
-        };
-		self.buffer.chars[row][col-1].write(blank);
+		}	
 		self.col_pos -= 1;
+		let row = BUFFER_HEIGHT -1;
+		let col = self.col_pos;
+
+		let blank = ScreenChar {
+			character: b' ',
+			colour: self.col_code,
+		};
+		self.buffer.chars[row][col].write(blank);		
+		Ok(())
 	}
 	
 	pub fn write_byte(&mut self, byte: u8) {
@@ -118,7 +120,12 @@ impl Writer {
 			}
 		}
 		self.clear_row(0);
-		self.col_pos = 0;
+		self.col_pos = BUFFER_WIDTH-1;
+	}
+	pub fn clear(&mut self) {
+		for row in (0..BUFFER_HEIGHT-1).rev() {
+			self.clear_row(row);
+		}
 	}
 	
     fn clear_row(&mut self, row: usize) {

@@ -10,6 +10,7 @@
 #![feature(async_fn_in_trait)]
 
 use core::panic::PanicInfo;
+use spin::Mutex;
 pub mod serial;
 pub mod vga_buffer;
 pub mod interrupts;
@@ -18,6 +19,7 @@ pub mod memory;
 pub mod allocator;
 pub mod tasks;
 pub mod applications;
+pub mod os;
 extern crate alloc;
 //extern crate fatfs;
 
