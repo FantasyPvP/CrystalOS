@@ -65,6 +65,20 @@ impl Writer {
 			}
 		}
 	}
+	pub fn backspace(&mut self) {
+		let row = BUFFER_HEIGHT -1;
+		let col = self.col_pos;
+		if self.col_pos == 0 {
+			self.undonewline();
+		}
+		let blank = ScreenChar {
+            character: b' ',
+            colour: self.col_code,
+        };
+		self.buffer.chars[row][col-1].write(blank);
+		self.col_pos -= 1;
+	}
+	
 	pub fn write_byte(&mut self, byte: u8) {
 		match byte {
 			b'\n' => {
@@ -93,6 +107,17 @@ impl Writer {
 			}
 		}
 		self.clear_row(BUFFER_HEIGHT -1);
+		self.col_pos = 0;
+	}
+	
+	pub fn undonewline(&mut self) {
+		for row in (0..BUFFER_HEIGHT-1).rev() {
+			for col in 0..BUFFER_WIDTH {
+				let character = self.buffer.chars[row][col].read();
+					self.buffer.chars[row + 1][col].write(character);
+			}
+		}
+		self.clear_row(0);
 		self.col_pos = 0;
 	}
 	
@@ -178,7 +203,15 @@ pub fn _log(args: fmt::Arguments) {
 	});
 }
 
-
+pub fn write(args: fmt::Arguments, cols: (Color, Color)) {
+	use core::fmt::Write;
+	use x86_64::instructions::interrupts;
+	interrupts::without_interrupts(|| {
+		let mut writer = WRITER.lock();
+		writer.col_code = ColorCode::new(cols.0, cols.1);
+		writer.write_fmt(args).unwrap();	
+	})
+}
 
 #[test_case]
 fn check_println_out() {
@@ -196,6 +229,4 @@ fn check_println_out() {
 	        assert_eq!(char::from(screen_char.character), c);
     	}
 	});
-
-
 }

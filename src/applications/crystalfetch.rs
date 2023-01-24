@@ -7,7 +7,7 @@ use crate::applications::shell::{
 use crate::{print, println};
 use alloc::{boxed::Box, string::String, vec::Vec};
 use core::iter::repeat;
-
+use crate::vga_buffer::{Color, write};
 
 pub struct CrystalFetch {}
 
@@ -26,7 +26,7 @@ impl Application for CrystalFetch {
 	
 	async fn run(&mut self, args:String) -> Result<(), Error> {
 	
-		println!("
+		write(format_args!("
    --------------------------------------
    
     _____                _        _  ____   _____ 
@@ -37,7 +37,8 @@ impl Application for CrystalFetch {
    \\_____|_|   \\__, |___/\\__\\__,_|_|\\____/|_____/ 
                 __/ |                             
                |___/                              
-
+"), (Color::Magenta, Color::Black));
+		println!("
        |  OS     ->  CrystalOS-ALPHA  
        |  BUILD  ->  0.1.1            
        |  Host   ->  ArchLinux-QEMU  
@@ -48,7 +49,6 @@ impl Application for CrystalFetch {
        |  Fetch  ->  CrystalFetch
 
    ---------------------------------------
-
 ");
 		println!("{}", "\n".repeat(1));
 		

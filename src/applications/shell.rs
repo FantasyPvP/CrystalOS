@@ -13,6 +13,8 @@ use crate::tasks::keyboard::ScanCodeStream;
 use pc_keyboard::{layouts, DecodedKey, HandleControl, Keyboard, ScancodeSet1};
 use futures_util::stream::StreamExt;
 use crate::alloc::borrow::ToOwned;
+use crate::vga_buffer::{write, Color, WRITER};
+use x86_64::instructions::interrupts;
 
 lazy_static! {
 	pub static ref CMD: Mutex<CommandHandler> = Mutex::new(CommandHandler::new());
@@ -122,8 +124,15 @@ impl CommandHandler {
 				if let Ok(Some(key_event)) = self.keyboard.add_byte(scancode) {
 					if let Some(key) = self.keyboard.process_keyevent(key_event) {
 						match key {
-							DecodedKey::Unicode(character) => { return character },
-							DecodedKey::RawKey(key) => print!("{:?}", key),
+							DecodedKey::Unicode(character) => { 
+								if character == '\b' {
+									WRITER.lock().backspace();
+									continue;
+								} else {
+									return character;
+								}
+							},
+							DecodedKey::RawKey(key) => { print!("{:?}", key) },
 						}
 					}
 				}
@@ -153,7 +162,7 @@ impl CommandHandler {
 	// TODO: coloured prompt
 	
 	pub fn prompt(&self) {
-		print!("\n [Crystal] >> ");
+		print!("\n [ Crystal ] >> ");
 	}
 	
 	
