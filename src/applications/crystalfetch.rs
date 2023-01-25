@@ -27,7 +27,7 @@ impl Application for CrystalFetch {
 	}
 
 	
-	async fn run(&mut self, args:String) -> Result<(), Error> {
+	async fn run(&mut self, args: Vec<String>) -> Result<(), Error> {
 
 		let os = OS.lock().os.clone();
 		let version = OS.lock().version.clone();

@@ -338,8 +338,8 @@ impl Application for Calculator {
 	async fn keystroke(&mut self) -> char {
 		CMD.lock().get_keystroke().await
 	}
-	async fn run(&mut self, equation: String) -> Result<(), ShellError> {
-	    match calculate_inner(equation) {
+	async fn run(&mut self, equation: Vec<String>) -> Result<(), ShellError> {
+	    match calculate_inner(equation.into_iter().collect()) {
 	        Ok(x) => x,
 	        Err(x) => { println!("your input must be a valid mathematical expression contaning only numbers (including floats) and the operators: [ +, -, *, **, /, //, % ]"); return Err(ShellError::CommandFailed(String::from("failed"))) },
 	    };

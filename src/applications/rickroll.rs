@@ -7,7 +7,7 @@ use crate::applications::shell::{
 };
 
 use crate::{print, println};
-use alloc::{string::String, boxed::Box};
+use alloc::{string::String, boxed::Box, vec::Vec};
 
 
 pub struct Rickroll {}
@@ -30,7 +30,7 @@ impl Application for Rickroll {
 
 
 
-	async fn run(&mut self, args: String) -> Result<(), Error> {
+	async fn run(&mut self, args: Vec<String>) -> Result<(), Error> {
 		println!("
 
   _   _                        _____                         

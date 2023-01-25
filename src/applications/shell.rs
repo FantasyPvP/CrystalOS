@@ -8,6 +8,7 @@ use crate::applications::{
 	calc::Calculator,
 	rickroll::Rickroll,
 	crystalfetch::CrystalFetch,
+	tasks::Tasks,
 };
 use crate::tasks::keyboard::ScanCodeStream;
 use pc_keyboard::{layouts, DecodedKey, HandleControl, Keyboard, ScancodeSet1};
@@ -34,7 +35,10 @@ pub async fn eventloop() {
 	println!("running!");
 
 	let mut fetch = CrystalFetch::new();
-	fetch.run(String::from("e")).await;
+	let string = String::from(" ");
+	let mut vec: Vec<String> = Vec::new();
+	vec.push(string);
+	fetch.run(vec).await;
 	
 	CMD.lock().prompt();		
 	
@@ -55,46 +59,47 @@ async fn exec() -> Result<(), Error> {
 	current.pop();
 	CMD.lock().current = String::new();
 
-	let (cmd, args) = match current.split_once(" ") {
-		Some((x,y)) => { command = true; (x,y.to_string()) },
-		None => ("none", "none".to_string()),
+	let (cmd, args) = match CommandHandler::parse_args(current) {
+		Ok((cmd, args)) => { (cmd, args) },
+		Err(x) => { return Err(Error::EmptyCommand); }
 	};
+	match cmd.as_str() {
+		"calculate"|"calc"|"solve" => {
+			let mut cmd = Calculator::new();
+			cmd.run(args).await;
+		}
+		
+		"rickroll" => {
+			let mut cmd = Rickroll::new();
+			cmd.run(args).await;
+		}
+		
+		"crystalfetch" => {
+			let mut cmd = CrystalFetch::new();
+			cmd.run(args).await;
+		}
+			"tasks" => {
+			let mut cmd = Tasks::new();
+			cmd.run(args).await;
+		}
+		// direct OS functions (not applications)
 
-	
-	if command == true {
-		match cmd {
-			"calculate"|"calc"|"solve" => {
-				let mut cmd = Calculator::new();
-				cmd.run(args).await;
-			},
-			"echo" => { println!("Crystal: '{}'", args) },
+		"echo" => { println!(" w "); println!("Crystal: '{}'", args.into_iter().map(|mut s| { s.push_str(" "); s}).collect::<String>()) },
+
+		"clear" => {
+			interrupts::without_interrupts(|| {
+					WRITER.lock().clear();
+			});
+		}
+		
+		"print" => {
+			use crate::os::OS;
+			let x: String = OS.lock().version.clone();
+			println!("{}", x);
+		}
 			
-			"rickroll" => {
-				let mut cmd = Rickroll::new();
-				cmd.run(args).await;
-			}
-			
-			"crystalfetch" => {
-				let mut cmd = CrystalFetch::new();
-				cmd.run(args).await;
-			}
-			"clear" => {
-				interrupts::without_interrupts(|| {
-						WRITER.lock().clear();
-				});
-			}
-			"print" => {
-				use crate::os::OS;
-				let x: String = OS.lock().version.clone();
-				println!("{}", x);
-			}
-			
-			_ => { println!("this command has not been implemented yet!"); },
-		};
-	} else {
-		println!("this command does not exist! (or too few arguments supplied)")
+		_ => { return Err(Error::UnknownCommand("command not yet implemented".to_string())) },
 	}
-
 	
 	Ok(())
 }
@@ -121,7 +126,26 @@ impl CommandHandler {
 		handler
 	}
 
+	pub fn parse_args(command: String) -> Result<(String, Vec<String>), String> {
 
+		let temp = command.split(" ").collect::<Vec<&str>>();
+		let mut args: Vec<String> = Vec::new();
+		for arg in temp {
+			match arg {
+				"" => {},
+				x => args.push(x.to_string())
+			}
+		};
+		let cmd: String;
+		if args.len() > 0 {
+			cmd = args[0].clone();
+			args.remove(0);
+		} else {
+			return Err("command was empty.".to_string());	
+		};
+		println!("cmd: {}", cmd);
+		Ok((cmd, args))
+	}
 		
 	// this function is activated every time the user presses a key on the keyboard
 	// it accesses the queue of keys (a static ref in src/tasks/keyboard.rs)
@@ -134,11 +158,9 @@ impl CommandHandler {
 						match key {
 							DecodedKey::Unicode(character) => { 
 								if character == b'\x08' as char { // checks if the character is a backspace
-									let mut failed = false;
 									interrupts::without_interrupts(|| {
-										WRITER.lock().backspace();
+										WRITER.lock().backspace(); // runs the backspace function of the vga buffer to remove the last character
 									});
-									 // runs the backspace function of the vga buffer to remove the last character
 									return None;
 								} else {
 									return Some(character);
@@ -206,6 +228,7 @@ struct CmdHistory {
 pub enum Error {
 	UnknownCommand(String),
 	CommandFailed(String),
+	EmptyCommand,
 }
 
 #[async_trait]
@@ -216,7 +239,7 @@ pub trait Application {
 
 	async fn keystroke(&mut self) -> char;
 
-	async fn run(&mut self, args: String) -> Result<(), Error> {
+	async fn run(&mut self, args: Vec<String>) -> Result<(), Error> {
 		Ok(())
 	}
 }
