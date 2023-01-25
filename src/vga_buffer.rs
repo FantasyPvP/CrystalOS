@@ -120,7 +120,7 @@ impl Writer {
 			}
 		}
 		self.clear_row(0);
-		self.col_pos = BUFFER_WIDTH-1;
+		self.col_pos = BUFFER_WIDTH;
 	}
 	pub fn clear(&mut self) {
 		for row in (0..BUFFER_HEIGHT-1).rev() {
