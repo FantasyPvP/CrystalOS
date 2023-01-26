@@ -84,7 +84,7 @@ async fn exec() -> Result<(), Error> {
 		}
 		// direct OS functions (not applications)
 
-		"echo" => { println!(" w "); println!("Crystal: '{}'", args.into_iter().map(|mut s| { s.push_str(" "); s}).collect::<String>()) },
+		"echo" => { println!("Crystal: '{}'", args.into_iter().map(|mut s| { s.push_str(" "); s}).collect::<String>()) },
 
 		"clear" => {
 			interrupts::without_interrupts(|| {
@@ -143,7 +143,6 @@ impl CommandHandler {
 		} else {
 			return Err("command was empty.".to_string());	
 		};
-		println!("cmd: {}", cmd);
 		Ok((cmd, args))
 	}
 		

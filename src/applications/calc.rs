@@ -2,7 +2,7 @@ use core::fmt;
 use alloc::{boxed::Box, string::String, vec::Vec};
 use alloc::string::ToString;
 use alloc::borrow::ToOwned;
-use crate::{println, mknode};
+use crate::{println, print,  mknode};
 
 use async_trait::async_trait;
 use crate::applications::shell::{
@@ -338,12 +338,28 @@ impl Application for Calculator {
 	async fn keystroke(&mut self) -> char {
 		CMD.lock().get_keystroke().await
 	}
-	async fn run(&mut self, equation: Vec<String>) -> Result<(), ShellError> {
-	    match calculate_inner(equation.into_iter().collect()) {
-	        Ok(x) => x,
-	        Err(x) => { println!("your input must be a valid mathematical expression contaning only numbers (including floats) and the operators: [ +, -, *, **, /, //, % ]"); return Err(ShellError::CommandFailed(String::from("failed"))) },
-	    };
-		Ok(())
+	async fn run(&mut self, args: Vec<String>) -> Result<(), ShellError> {
+		if args.len() == 0 {
+			loop {
+				print!("enter equation > ");
+				let inp = self.input().await;
+				println!("{}", inp);
+				if inp == String::from("exit\n") {
+					return Ok(());
+				}
+				match calculate_inner(inp) {
+			        Ok(_) => (),
+			        Err(_) => { println!("your input must be a valid mathematical expression contaning only numbers (including floats) and the operators: [ +, -, *, **, /, //, % ]"); return Err(ShellError::CommandFailed(String::from("failed"))) },
+		    	};
+			}
+		} else {
+		    match calculate_inner(args.into_iter().collect()) {
+		        Ok(x) => x,
+		        Err(_) => { println!("your input must be a valid mathematical expression contaning only numbers (including floats) and the operators: [ +, -, *, **, /, //, % ]"); return Err(ShellError::CommandFailed(String::from("failed"))) },
+		    };
+			Ok(())			
+		}
+
 	}
 }
 
