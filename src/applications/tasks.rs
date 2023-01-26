@@ -41,15 +41,20 @@ impl Application for Tasks {
 
 		}
 		if args[0].clone() == String::from("list") {
+
+			println!(
+"-------------------------------------
+         Your TODO List:
+-------------------------------------\n");
 			
 			for task in TASKS.lock().tasks.iter() {
 
 				let idx = task.taskid;
 				let taskname = task.name.clone();
 				let content = task.content.clone();
-				println!("    | Task {}  -> {}\n    | {}", idx, taskname, content);
+				println!("    | Task {}  -> {}\n    | {}\n", idx, taskname, content);
 			}
-
+println!("\n-------------------------------------");
 			
 		}
 		
@@ -89,8 +94,9 @@ impl TaskList {
 			next_idx: 1
 		}
 	}
-	pub fn next(&self) -> usize {
-		self.next_idx
+	pub fn next(&mut self) -> usize {
+		self.next_idx += 1;
+		self.next_idx -1
 	}
 	pub fn add(&mut self, name: String, content: String) {
 		let task = Task::new(self.next(), name, content);
