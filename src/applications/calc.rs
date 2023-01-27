@@ -5,7 +5,7 @@ use alloc::borrow::ToOwned;
 use crate::{println, print,  mknode};
 
 use async_trait::async_trait;
-use crate::applications::shell::{
+use crate::shell::{
 	CMD,
 	Application,
 	Error as ShellError
@@ -400,12 +400,13 @@ fn calculate_inner(mut equation: String) -> Result<f64, Error> {
       | |___| (_| | | (__          
        \\_____\\__,_|_|\\___|    
 
-
-    |                                     
-    |    Expression -> [ {} ]                            
-    |                                      
-    |    Calculated Solution -> [ {} ]                             
-    |\n
+    ┌────────────────────────────────────────────┐
+    │                                            │         
+    │    Expression -> [ {} ]                            
+    │                                            │
+    │    Calculated Solution -> [ {} ]    
+    │                                            │
+    └────────────────────────────────────────────┘
     ", neweq, return_res);
 
     Ok(return_res)

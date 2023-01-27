@@ -1,6 +1,6 @@
 use async_trait::async_trait;
 
-use crate::applications::shell::{
+use crate::shell::{
 	Application,
 	CMD,
 	Error,

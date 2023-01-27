@@ -13,7 +13,7 @@ use crate::applications::{
 use crate::tasks::keyboard::ScanCodeStream;
 use pc_keyboard::{layouts, DecodedKey, HandleControl, Keyboard, ScancodeSet1};
 use futures_util::stream::StreamExt;
-use crate::vga_buffer::{write, Color, WRITER};
+use crate::render::{write, Color, RENDERER};
 use x86_64::instructions::interrupts;
 
 lazy_static! {
@@ -26,6 +26,7 @@ lazy_static! {
 pub async fn command_handler() {
 	eventloop().await;
 }
+
 
 
 /// this function starts the shell running, the function will loop repeatedly until the command to shutdown
@@ -44,10 +45,18 @@ pub async fn eventloop() {
 	loop {
 		let string = CMD.lock().get_string().await;
 		CMD.lock().current.push_str(&string);
-		exec().await;
+		match exec().await {
+			Ok(_) => { (); },
+			Err(e) => { handle_error(e); },
+		};
 		CMD.lock().prompt();
 	}
 }
+
+fn handle_error(e: Error) {
+	
+}
+
 
 async fn exec() -> Result<(), Error> {
 	let mut current = CMD.lock().current.clone();
@@ -86,7 +95,7 @@ async fn exec() -> Result<(), Error> {
 
 		"clear" => {
 			interrupts::without_interrupts(|| {
-					WRITER.lock().clear();
+					RENDERER.lock().clear();
 			});
 		}
 		
@@ -165,7 +174,7 @@ impl CommandHandler {
 							DecodedKey::Unicode(character) => { 
 								if character == b'\x08' as char { // checks if the character is a backspace
 									interrupts::without_interrupts(|| {
-										WRITER.lock().backspace(); // runs the backspace function of the vga buffer to remove the last character
+										RENDERER.lock().backspace(); // runs the backspace function of the vga buffer to remove the last character
 									});
 									return None;
 								} else {

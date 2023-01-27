@@ -82,7 +82,7 @@ lazy_static! {
 		},
         userspace: BufferSwap {
             chars: [[ScreenChar {
-                character: 32u8,
+                character: 179u8,
                 colour: ColorCode::new(Color::White, Color::Black),
             }; BUFFER_WIDTH]; BUFFER_HEIGHT]
         },
@@ -142,16 +142,42 @@ impl Renderer {
     }
 
 
-
-
 	pub fn write_string(&mut self, string: &str) {
-		for byte in string.bytes() {
-			match byte {
-				0x20..=0x7e | b'\n' => self.write_byte(byte),
-				_ => self.write_byte(0xfe),
-			}
+		for ch in string.chars() {
+
+			if let Some(x) = self.fancy_char(ch) {
+				self.write_byte(x)
+			} else {
+				match ch as u8 {
+					0x20..=0xff | b'\n' => self.write_byte(ch as u8),
+					_ => self.write_byte(0xfe),
+				}	
+			}	
 		}
 	}
+
+	fn fancy_char(&self, ch: char) -> Option<u8> {
+		let res: u8 = match ch {
+			'│' => 179,
+			'─' => 196,
+			'┴' => 193,
+			'┤'	=> 180,
+			'═' => 205,
+			'║'	=> 186,
+			'╗' => 187,
+			'╝' => 188,
+			'╚' => 200,
+			'╔' => 201,
+			'»' => 175,
+			'┐' => 191,
+			'└' => 192,
+			'┘' => 217,
+			'┌' => 218,		
+			_ => { return None; }
+		};
+		Some(res)
+	}
+
 	pub fn backspace(&mut self) -> Result<(), ()> {
 		if self.col_pos == 0 {
 			self.undonewline();
@@ -233,7 +259,15 @@ impl fmt::Write for Renderer {
 	}
 }
 
-
+pub fn write(args: fmt::Arguments, cols: (Color, Color)) {
+	use core::fmt::Write;
+	use x86_64::instructions::interrupts;
+	interrupts::without_interrupts(|| {
+		let mut writer = RENDERER.lock();
+		writer.col_code = ColorCode::new(cols.0, cols.1);
+		writer.write_fmt(args).unwrap()
+	})
+}
 
 
 
@@ -243,13 +277,13 @@ impl fmt::Write for Renderer {
 
 
 #[macro_export]
-macro_rules! println2 {
+macro_rules! println {
 	() => ($crate::print!("/n"));
-	($($arg:tt)*) => ($crate::print2!("{}\n", format_args!($($arg)*)));
+	($($arg:tt)*) => ($crate::print!("{}\n", format_args!($($arg)*)));
 }
 
 #[macro_export]
-macro_rules! print2 {
+macro_rules! print {
 	($($arg:tt)*) => ($crate::render::_print(format_args!($($arg)*)));
 }
 

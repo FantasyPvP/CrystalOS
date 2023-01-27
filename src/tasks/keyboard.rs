@@ -9,7 +9,7 @@ use futures_util::task::AtomicWaker;
 use futures_util::stream::StreamExt;
 use pc_keyboard::{layouts, DecodedKey, HandleControl, Keyboard, ScancodeSet1};
 use crate::print;
-use crate::applications::shell::CMD;
+use crate::shell::CMD;
 
 static WAKER: AtomicWaker = AtomicWaker::new();
 static SCANCODE_QUEUE: OnceCell<ArrayQueue<u8>> = OnceCell::uninit();

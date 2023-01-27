@@ -58,13 +58,42 @@ pub struct Writer {
 
 impl Writer {
 	pub fn write_string(&mut self, string: &str) {
-		for byte in string.bytes() {
-			match byte {
-				0x20..=0x7e | b'\n' => self.write_byte(byte),
-				_ => self.write_byte(0xfe),
-			}
+		for ch in string.chars() {
+
+			if let Some(x) = self.fancy_char(ch) {
+				self.write_byte(x)
+			} else {
+				match ch as u8 {
+					0x20..=0xff | b'\n' => self.write_byte(ch as u8),
+					_ => self.write_byte(0xfe),
+				}	
+			}	
 		}
 	}
+
+	fn fancy_char(&self, ch: char) -> Option<u8> {
+		let res: u8 = match ch {
+			'│' => 179,
+			'─' => 196,
+			'┴' => 193,
+			'┤'	=> 180,
+			'═' => 205,
+			'║'	=> 186,
+			'╗' => 187,
+			'╝' => 188,
+			'╚' => 200,
+			'╔' => 201,
+			'»' => 175,
+			'┐' => 191,
+			'└' => 192,
+			'┘' => 217,
+			'┌' => 218,
+			_ => { return None; }
+		};
+		Some(res)
+	}
+
+	
 	pub fn backspace(&mut self) -> Result<(), ()> {
 		if self.col_pos == 0 {
 			self.undonewline();
@@ -111,7 +140,7 @@ impl Writer {
 		self.clear_row(BUFFER_HEIGHT -1);
 		self.col_pos = 0;
 	}
-	
+
 	pub fn undonewline(&mut self) {
 		for row in (0..BUFFER_HEIGHT-1).rev() {
 			for col in 0..BUFFER_WIDTH {
@@ -160,13 +189,13 @@ lazy_static! {
 }
 
 #[macro_export]
-macro_rules! println {
-	() => ($crate::print!("/n"));
+macro_rules! println2 {
+	() => ($crate::print2!("/n"));
 	($($arg:tt)*) => ($crate::print!("{}\n", format_args!($($arg)*)));
 }
 
 #[macro_export]
-macro_rules! print {
+macro_rules! print2 {
 	($($arg:tt)*) => ($crate::vga_buffer::_print(format_args!($($arg)*)));
 }
 

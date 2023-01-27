@@ -1,5 +1,5 @@
 use alloc::{string::String, vec::Vec, boxed::Box};
-use crate::applications::shell::{
+use crate::shell::{
 	Application,
 	Error
 };
@@ -35,12 +35,20 @@ impl Application for Tasks {
 
 		if args[0].clone() == String::from("add") {
 
-			let content = args[2..].to_owned().into_iter().map(|mut s| {s.push_str(" "); s} ).collect::<String>();
-			println!("added {}:\n    {}", &args[1], content);
-			self.add_task(args[1].clone(), content);
+			let content = args[1..].to_owned().into_iter().map(|mut s| {s.push_str(" "); s} ).collect::<String>();
+			self.add_task(content);
 
 		}
-		if args[0].clone() == String::from("list") {
+
+		if args[0].clone() == String::from("remove") {
+			let idx = match  args[1].to_owned().parse::<usize>() {
+				Ok(x) => x,
+				Err(_) => { return Err(Error::CommandFailed(String::from("number must be an integer"))) },
+			};
+			self.remove_task(idx);
+		}
+		
+		if args[0].as_str() == "list" {
 
 			println!(
 "-------------------------------------
@@ -50,9 +58,8 @@ impl Application for Tasks {
 			for task in TASKS.lock().tasks.iter() {
 
 				let idx = task.taskid;
-				let taskname = task.name.clone();
 				let content = task.content.clone();
-				println!("    | Task {}  -> {}\n    | {}\n", idx, taskname, content);
+				println!("    | Task -> {} \n    | {}\n", idx, content);
 			}
 println!("\n-------------------------------------");
 			
@@ -63,11 +70,11 @@ println!("\n-------------------------------------");
 }
 
 impl Tasks {
-	fn add_task(&mut self, name: String, content: String) {
-		TASKS.lock().add(name, content);
+	fn add_task(&mut self, content: String) {
+		TASKS.lock().add(content);
 	}
-	fn remove_task(&self, index: usize) {
-		
+	fn remove_task(&self, idx: usize) {
+		TASKS.lock().remove(idx);
 	}
 	fn display(&self) {
 		
@@ -98,31 +105,36 @@ impl TaskList {
 		self.next_idx += 1;
 		self.next_idx -1
 	}
-	pub fn add(&mut self, name: String, content: String) {
-		let task = Task::new(self.next(), name, content);
+	pub fn add(&mut self, content: String) ->  Result<(), Error> {
+		let task = Task::new(self.next(), content);
 		let id = task.taskid.clone();
 		self.tasks.push(task);
 		self.current = id;
+		Ok(())
 	}
-	pub fn remove(&mut self, id: usize) {
-		
+	pub fn remove(&mut self, id: usize) -> Result<(), Error> {
+		for (i, task) in self.tasks.clone().iter().enumerate() {
+			match task.taskid {
+				id => { self.tasks.remove(i); },
+				_ => { return Err(Error::CommandFailed(String::from("this task does not exist"))); },
+			}
+		};
+		Ok(())
 	}
 }
 
 
 
-
+#[derive(Debug, Clone)]
 pub struct Task {
 	taskid: usize,
-	name: String,
 	content: String,
 }
 
 impl Task {
-	fn new(id: usize, name: String, content: String) -> Self {
+	fn new(id: usize, content: String) -> Self {
 		Self {
 			taskid: id,
-			name,
 			content,
 		}
 	}

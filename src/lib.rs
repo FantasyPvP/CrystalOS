@@ -21,6 +21,7 @@ pub mod allocator;
 pub mod tasks;
 pub mod applications;
 pub mod os;
+pub mod shell;
 pub mod threading;
 pub mod render;
 extern crate alloc;

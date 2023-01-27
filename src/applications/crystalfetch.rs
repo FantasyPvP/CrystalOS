@@ -1,5 +1,5 @@
 use async_trait::async_trait;
-use crate::applications::shell::{
+use crate::shell::{
 	Application,
 	Error,
 };
@@ -32,8 +32,7 @@ impl Application for CrystalFetch {
 
 
 		write(format_args!("
-   --------------------------------------
-   
+────────────────────────────────────────────────────────
     _____                _        _  ____   _____ 
    / ____|              | |      | |/ __ \\ / ____|
   | |     _ __ _   _ ___| |_ __ _| | |  | | (___  
@@ -45,22 +44,20 @@ impl Application for CrystalFetch {
 "), (Color::Magenta, Color::Black));
 
 		println!("
-       |  OS     ->  {}
-       |  BUILD  ->  {}
-       |  Host   ->  ArchLinux-QEMU  
-       |  RAM    ->  idk              
-       |  Shell  ->  CrystalSH        
-       |  API    ->  CrystalAPI       
-       |  Pkgs   ->  4                
-       |  Fetch  ->  CrystalFetch
-
-
-
-   ---------------------------------------
+       ╔═══════════════════════════════
+       ║
+       ║   OS      »  {}
+       ║   BUILD   »  {}  
+       ║   RAM     »  idk              
+       ║   Shell   »  CrystalSH        
+       ║   API     »  CrystalAPI       
+       ║   Pkgs    »  4                
+       ║   Fetch   »  CrystalFetch
+       ║
+       ╚═══════════════════════════════
+       
+────────────────────────────────────────────────────────
 ", os, version);
-
-		println!("{}", "\n");
-	
 		Ok(())
 	}
 	
