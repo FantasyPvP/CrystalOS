@@ -108,13 +108,12 @@ impl Interpreter {
             Operator::Exp => {
                 return Ok(Value::Number({
                 	let mut val = 1.0;
-                	for i in 0..(right as i64) {
+                	for _ in 0..(right as i64) {
                 		val *= left
                 	};
                 	val
                 }))
             }
-            _ => return Err(Error::Other(String::from("not an operator")))
         }
 
     }
@@ -417,7 +416,7 @@ fn calculate_inner(mut equation: String) -> Result<f64, Error> {
 fn tokenise(equation: &str) -> Result<Vec<Token>, Error> {
     let mut tokens = Vec::new();
     let mut current_num = "".to_string();
-    let mut current_string: String = "".to_string();
+    let current_string: String = "".to_string();
 
     'mainloop: for (x, character) in equation.chars().enumerate() {
 
@@ -483,7 +482,6 @@ enum Token {
     Operator(Operator),
     Bracket(char),
     Null,
-    String(String)
 }
 
 
@@ -496,7 +494,6 @@ enum Operator {
     Qot,
     Mod,
     Exp,
-    Eq,
 }
 
 #[derive(Debug)]
@@ -584,7 +581,6 @@ impl fmt::Display for Operator {
             Operator::Mod => write!(f, "%"),
             Operator::Qot => write!(f, "//"),
             Operator::Exp => write!(f, "**"),
-            Operator::Eq => write!(f, "="),
         }
     }
 }

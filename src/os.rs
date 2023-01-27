@@ -1,7 +1,6 @@
 use lazy_static::lazy_static;
 use spin::Mutex;
 use alloc::{string::String};
-use alloc::borrow::ToOwned;
 
 lazy_static! {
 	pub static ref OS: Mutex<SysInfo> = Mutex::new(SysInfo {

@@ -29,8 +29,6 @@ fn panic(info: &PanicInfo) -> ! {
 entry_point!(main);
 
 
-
-
 fn main(boot_info: &'static BootInfo) -> ! {
 	use CrystalOS::allocator;
 	use CrystalOS::memory;

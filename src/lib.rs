@@ -22,6 +22,7 @@ pub mod tasks;
 pub mod applications;
 pub mod os;
 pub mod threading;
+pub mod render;
 extern crate alloc;
 //extern crate fatfs;
 
@@ -100,6 +101,10 @@ pub enum QemuExitCode {
 	Err = 0x11,
 }
 
+pub fn poweroff() {
+	exit(QemuExitCode::Ok);
+}
+
 pub fn exit(code: QemuExitCode) {
 	use x86_64::instructions::port::Port;
 
@@ -107,4 +112,5 @@ pub fn exit(code: QemuExitCode) {
 		let mut port = Port::new(0xf4);
 		port.write(code as u32);
 	}
+	println!("e");
 }

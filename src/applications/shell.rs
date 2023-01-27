@@ -2,7 +2,7 @@
 use async_trait::async_trait;
 use lazy_static::lazy_static;
 use crate::{println, print, alloc::string::ToString};
-use alloc::{string::String, vec::Vec, boxed::Box, rc::Rc};
+use alloc::{string::String, vec::Vec, boxed::Box};
 use spin::Mutex;
 use crate::applications::{
 	calc::Calculator,
@@ -13,7 +13,6 @@ use crate::applications::{
 use crate::tasks::keyboard::ScanCodeStream;
 use pc_keyboard::{layouts, DecodedKey, HandleControl, Keyboard, ScancodeSet1};
 use futures_util::stream::StreamExt;
-use crate::alloc::borrow::ToOwned;
 use crate::vga_buffer::{write, Color, WRITER};
 use x86_64::instructions::interrupts;
 
@@ -51,7 +50,6 @@ pub async fn eventloop() {
 }
 
 async fn exec() -> Result<(), Error> {
-	let mut command = false;
 	let mut current = CMD.lock().current.clone();
 	
 	CMD.lock().history.history.push(current.clone());
@@ -66,21 +64,21 @@ async fn exec() -> Result<(), Error> {
 	match cmd.as_str() {
 		"calculate"|"calc"|"solve" => {
 			let mut cmd = Calculator::new();
-			cmd.run(args).await;
+			cmd.run(args).await?;
 		}
 		
 		"rickroll" => {
 			let mut cmd = Rickroll::new();
-			cmd.run(args).await;
+			cmd.run(args).await?;
 		}
 		
 		"crystalfetch" => {
 			let mut cmd = CrystalFetch::new();
-			cmd.run(args).await;
+			cmd.run(args).await?;
 		}
 			"tasks" => {
 			let mut cmd = Tasks::new();
-			cmd.run(args).await;
+			cmd.run(args).await?;
 		}
 		// direct OS functions (not applications)
 
@@ -96,6 +94,15 @@ async fn exec() -> Result<(), Error> {
 			use crate::os::OS;
 			let x: String = OS.lock().version.clone();
 			println!("{}", x);
+		}
+		"switch" => {
+			use crate::render::RENDERER;
+			if RENDERER.lock().sandbox == true {
+				RENDERER.lock().text_mode().unwrap();
+			} else {
+				RENDERER.lock().sandbox_mode().unwrap();
+			}
+
 		}
 			
 		_ => { return Err(Error::UnknownCommand("command not yet implemented".to_string())) },

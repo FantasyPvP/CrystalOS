@@ -1,13 +1,11 @@
 use async_trait::async_trait;
 use crate::applications::shell::{
-	CMD, 
 	Application,
 	Error,
 };
 use crate::os::OS;
-use crate::{print, println};
+use crate::{println};
 use alloc::{boxed::Box, string::String, vec::Vec};
-use core::iter::repeat;
 use crate::vga_buffer::{Color, write};
 
 pub struct CrystalFetch {}
@@ -27,11 +25,12 @@ impl Application for CrystalFetch {
 	}
 
 	
-	async fn run(&mut self, args: Vec<String>) -> Result<(), Error> {
+	async fn run(&mut self, _args: Vec<String>) -> Result<(), Error> {
 
 		let os = OS.lock().os.clone();
 		let version = OS.lock().version.clone();
-	
+
+
 		write(format_args!("
    --------------------------------------
    
@@ -55,11 +54,13 @@ impl Application for CrystalFetch {
        |  Pkgs   ->  4                
        |  Fetch  ->  CrystalFetch
 
+
+
    ---------------------------------------
 ", os, version);
 
 		println!("{}", "\n");
-		
+	
 		Ok(())
 	}
 	
