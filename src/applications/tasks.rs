@@ -12,6 +12,9 @@ use alloc::{
 	borrow::ToOwned,
 };
 
+use crate::std::Random;
+
+
 lazy_static! {
 	static ref TASKS: Mutex<TaskList> = Mutex::new(TaskList::new());
 }
@@ -25,12 +28,6 @@ pub struct Tasks;
 impl Application for Tasks {
 	fn new() -> Self { Self {} }
 
-	async fn input(&mut self) -> String {
-		String::from("e")
-	}
-	async fn keystroke(&mut self) -> char {
-		'e'
-	}
 	async fn run(&mut self, args: Vec<String>) -> Result<(), Error> {
 
 		if args[0].clone() == String::from("add") {
@@ -47,14 +44,47 @@ impl Application for Tasks {
 			};
 			self.remove_task(idx);
 		}
-		
+
+		if args[0].clone() == String::from("select") {
+			let arg2 = args[1].clone();
+			if arg2 == String::from("random") {
+				let len = TASKS.lock().tasks.len();
+				self.select_task(Random::int(0, len -1) as i32);
+			} else if arg2.parse::<u64>().is_ok() {
+				()
+			}
+		}
+
+		if args[0].clone() == String::from("priority") {
+			let idx = TASKS.lock().current;
+			if idx < 0 {
+				println!(
+"-------------------------------------
+no task currently set as priority
+-------------------------------------\n"
+				);
+				return Ok(())
+			}
+
+			let task = TASKS.lock().tasks[idx as usize].clone();
+			let content = task.content.clone();
+
+			println!(
+"-------------------------------------
+PRIORITY TASK: {} : {}
+-------------------------------------\n",
+				idx, content
+			)
+		}
+
+
 		if args[0].as_str() == "list" {
 
 			println!(
 "-------------------------------------
          Your TODO List:
 -------------------------------------\n");
-			
+
 			for task in TASKS.lock().tasks.iter() {
 
 				let idx = task.taskid;
@@ -62,9 +92,9 @@ impl Application for Tasks {
 				println!("    | Task -> {} \n    | {}\n", idx, content);
 			}
 println!("\n-------------------------------------");
-			
+
 		}
-		
+
 		Ok(())
 	}
 }
@@ -76,19 +106,13 @@ impl Tasks {
 	fn remove_task(&self, idx: usize) {
 		TASKS.lock().remove(idx);
 	}
-	fn display(&self) {
-		
+	fn select_task(&self, idx: i32) {
+		TASKS.lock().select(idx);
 	}
 }
 
-
-
-
-
-
-
 pub struct TaskList {
-	current: usize,
+	current: i32,
 	tasks: Vec<Task>,
 	next_idx: usize,
 }
@@ -96,7 +120,7 @@ pub struct TaskList {
 impl TaskList {
 	pub fn new() -> Self {
 		Self {
-			current: 0,
+			current: -1,
 			tasks: Vec::new(),
 			next_idx: 1
 		}
@@ -109,7 +133,6 @@ impl TaskList {
 		let task = Task::new(self.next(), content);
 		let id = task.taskid.clone();
 		self.tasks.push(task);
-		self.current = id;
 		Ok(())
 	}
 	pub fn remove(&mut self, id: usize) -> Result<(), Error> {
@@ -119,6 +142,10 @@ impl TaskList {
 				_ => { return Err(Error::CommandFailed(String::from("this task does not exist"))); },
 			}
 		};
+		Ok(())
+	}
+	pub fn select(&mut self, idx: i32) -> Result<(), Error> {
+		self.current = idx;
 		Ok(())
 	}
 }

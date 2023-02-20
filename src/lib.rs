@@ -24,6 +24,7 @@ pub mod os;
 pub mod shell;
 pub mod threading;
 pub mod render;
+pub mod std;
 extern crate alloc;
 //extern crate fatfs;
 
@@ -79,7 +80,7 @@ pub fn test_panic_handler(info: &PanicInfo) -> ! {
 	serial_println!("ERR");
 	serial_println!("Error: {}\n", info);
 	exit(QemuExitCode::Err);
-	hlt(); 
+	hlt();
 }
 
 #[cfg(test)]

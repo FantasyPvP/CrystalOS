@@ -29,7 +29,7 @@ impl Executor {
 
 	fn run_ready_tasks(&mut self) {
 		let Self {
-			tasks, task_queue, waker_cache 
+			tasks, task_queue, waker_cache
 		} = self;
 
 		while let Ok(task_id) = task_queue.pop() {
@@ -47,7 +47,7 @@ impl Executor {
 				}
 				Poll::Pending => {}
 			}
-		} 
+		}
 	}
 
 	pub fn run(&mut self) -> ! {
@@ -56,7 +56,7 @@ impl Executor {
 			self.sleep_if_idle();
 		}
 	}
-	
+
 	fn sleep_if_idle(&self) {
 
 		use x86_64::instructions::interrupts::{self, enable_and_hlt};

@@ -1,6 +1,6 @@
 [package]
 name = "CrystalOS"
-version = "0.1.0"
+version = "0.1.1"
 edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
@@ -8,8 +8,8 @@ edition = "2021"
 
 [package.metadata.bootimage]
 test-args = ["-device", "isa-debug-exit,iobase=0xf4,iosize=0x04", "-serial", "stdio", "-display", "none"]
-test-success-exit-code = 33  
-test-timeout = 30   
+test-success-exit-code = 33
+test-timeout = 30
 
 [dependencies]
 bootloader= { version = "0.9.23", features = ["map_physical_memory"] }
@@ -24,6 +24,7 @@ async-trait = "0.1.62"
 # fatfs = { version = "0.3", default-features = false, features = ["core_io"] }
 ansi_rgb = "0.2.0"
 rgb = "0.8"
+rand = { version = "0.8.5", default-features = false, features = ["small_rng"]}
 
 [dependencies.lazy_static]
 version = "1.0"

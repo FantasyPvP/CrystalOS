@@ -39,9 +39,9 @@ pub async fn eventloop() {
 	let mut vec: Vec<String> = Vec::new();
 	vec.push(string);
 	fetch.run(vec).await;
-	
-	CMD.lock().prompt();		
-	
+
+	CMD.lock().prompt();
+
 	loop {
 		let string = CMD.lock().get_string().await;
 		CMD.lock().current.push_str(&string);
@@ -54,13 +54,13 @@ pub async fn eventloop() {
 }
 
 fn handle_error(e: Error) {
-	
+
 }
 
 
 async fn exec() -> Result<(), Error> {
 	let mut current = CMD.lock().current.clone();
-	
+
 	CMD.lock().history.history.push(current.clone());
 
 	current.pop();
@@ -75,12 +75,12 @@ async fn exec() -> Result<(), Error> {
 			let mut cmd = Calculator::new();
 			cmd.run(args).await?;
 		}
-		
+
 		"rickroll" => {
 			let mut cmd = Rickroll::new();
 			cmd.run(args).await?;
 		}
-		
+
 		"crystalfetch" => {
 			let mut cmd = CrystalFetch::new();
 			cmd.run(args).await?;
@@ -98,7 +98,7 @@ async fn exec() -> Result<(), Error> {
 					RENDERER.lock().clear();
 			});
 		}
-		
+
 		"print" => {
 			use crate::os::OS;
 			let x: String = OS.lock().version.clone();
@@ -111,12 +111,17 @@ async fn exec() -> Result<(), Error> {
 			} else {
 				RENDERER.lock().sandbox_mode().unwrap();
 			}
-
 		}
-			
+		"random" => {
+			use crate::std::Random;
+			let vec = Vec::from(["a", "b", "c", "d", "e", "f"]);
+			let sel = Random::selection(vec);
+			println!("{}", sel);
+		}
+
 		_ => { return Err(Error::UnknownCommand("command not yet implemented".to_string())) },
 	}
-	
+
 	Ok(())
 }
 
@@ -157,11 +162,11 @@ impl CommandHandler {
 			cmd = args[0].clone();
 			args.remove(0);
 		} else {
-			return Err("command was empty.".to_string());	
+			return Err("command was empty.".to_string());
 		};
 		Ok((cmd, args))
 	}
-		
+
 	// this function is activated every time the user presses a key on the keyboard
 	// it accesses the queue of keys (a static ref in src/tasks/keyboard.rs)
 
@@ -171,7 +176,7 @@ impl CommandHandler {
 				if let Ok(Some(key_event)) = self.keyboard.add_byte(scancode) {
 					if let Some(key) = self.keyboard.process_keyevent(key_event) {
 						match key {
-							DecodedKey::Unicode(character) => { 
+							DecodedKey::Unicode(character) => {
 								if character == b'\x08' as char { // checks if the character is a backspace
 									interrupts::without_interrupts(|| {
 										RENDERER.lock().backspace(); // runs the backspace function of the vga buffer to remove the last character
@@ -185,7 +190,7 @@ impl CommandHandler {
 						}
 					}
 				}
-			}			
+			}
 		}
 	}
 
@@ -210,11 +215,11 @@ impl CommandHandler {
 			let (character, execute): (char, bool) = match character {
 				'\n' => (character, true),
 				_ => (character, false),
-			};	
+			};
 			val.push(character);
 			if execute {
 				return val;
-			} 			
+			}
 		}
 
 	}
@@ -222,12 +227,12 @@ impl CommandHandler {
 	// displays a text prompt for the user to type into.
 	// this is a separate function so that it can be developed as necessary later on
 	// TODO: coloured prompt
-	
+
 	pub fn prompt(&self) {
 		print!("\n [ Crystal ] >> ");
 	}
-	
-	
+
+
 	// this function is run every time the enter key is pressed in the command line mode.
 	// it detects the command that is being run and then executes it, passing the arguments to it.
 
@@ -249,10 +254,6 @@ pub enum Error {
 #[async_trait]
 pub trait Application {
 	fn new() -> Self;
-
-	async fn input(&mut self) -> String;
-
-	async fn keystroke(&mut self) -> char;
 
 	async fn run(&mut self, args: Vec<String>) -> Result<(), Error> {
 		Ok(())

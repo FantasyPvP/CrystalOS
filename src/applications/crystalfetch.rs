@@ -13,18 +13,10 @@ pub struct CrystalFetch {}
 #[async_trait]
 impl Application for CrystalFetch {
 
-
 	fn new() -> Self {
 		Self {}
 	}
-	async fn input(&mut self) -> String {
-		String::from("this does nothing")
-	}
-	async fn keystroke(&mut self) -> char {
-		'e'
-	}
 
-	
 	async fn run(&mut self, _args: Vec<String>) -> Result<(), Error> {
 
 		let os = OS.lock().os.clone();
@@ -33,32 +25,32 @@ impl Application for CrystalFetch {
 
 		write(format_args!("
 ────────────────────────────────────────────────────────
-    _____                _        _  ____   _____ 
+    _____                _        _  ____   _____
    / ____|              | |      | |/ __ \\ / ____|
-  | |     _ __ _   _ ___| |_ __ _| | |  | | (___  
-  | |    | '__| | | / __| __/ _` | | |  | |\\___ \\ 
+  | |     _ __ _   _ ___| |_ __ _| | |  | | (___
+  | |    | '__| | | / __| __/ _` | | |  | |\\___ \\
   | |____| |  | |_| \\__ \\ || (_| | | |__| |____) |
-   \\_____|_|   \\__, |___/\\__\\__,_|_|\\____/|_____/ 
-                __/ |                             
-               |___/                              
+   \\_____|_|   \\__, |___/\\__\\__,_|_|\\____/|_____/
+                __/ |
+               |___/
 "), (Color::Magenta, Color::Black));
 
 		println!("
        ╔═══════════════════════════════
        ║
        ║   OS      »  {}
-       ║   BUILD   »  {}  
-       ║   RAM     »  idk              
-       ║   Shell   »  CrystalSH        
-       ║   API     »  CrystalAPI       
-       ║   Pkgs    »  4                
+       ║   BUILD   »  {}
+       ║   RAM     »  idk
+       ║   Shell   »  CrystalSH
+       ║   API     »  CrystalAPI
+       ║   Pkgs    »  4
        ║   Fetch   »  CrystalFetch
        ║
        ╚═══════════════════════════════
-       
+
 ────────────────────────────────────────────────────────
 ", os, version);
 		Ok(())
 	}
-	
+
 }

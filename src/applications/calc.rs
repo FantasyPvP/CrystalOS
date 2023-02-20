@@ -2,11 +2,11 @@ use core::fmt;
 use alloc::{boxed::Box, string::String, vec::Vec};
 use alloc::string::ToString;
 use alloc::borrow::ToOwned;
-use crate::{println, print,  mknode};
+use crate::{println, print,  mknode, std};
+
 
 use async_trait::async_trait;
 use crate::shell::{
-	CMD,
 	Application,
 	Error as ShellError
 };
@@ -331,17 +331,12 @@ impl Application for Calculator {
 	fn new() -> Self {
 		Self {}
 	}
-	async fn input(&mut self) -> String {
-		CMD.lock().get_string().await
-	}
-	async fn keystroke(&mut self) -> char {
-		CMD.lock().get_keystroke().await
-	}
+
 	async fn run(&mut self, args: Vec<String>) -> Result<(), ShellError> {
 		if args.len() == 0 {
 			loop {
 				print!("enter equation > ");
-				let inp = self.input().await;
+				let inp = std::stdin().await;
 				println!("{}", inp);
 				if inp == String::from("exit\n") {
 					return Ok(());
@@ -356,7 +351,7 @@ impl Application for Calculator {
 		        Ok(x) => x,
 		        Err(_) => { println!("your input must be a valid mathematical expression contaning only numbers (including floats) and the operators: [ +, -, *, **, /, //, % ]"); return Err(ShellError::CommandFailed(String::from("failed"))) },
 		    };
-			Ok(())			
+			Ok(())
 		}
 
 	}
@@ -387,24 +382,24 @@ fn calculate_inner(mut equation: String) -> Result<f64, Error> {
 		}
 	};
 	println!("\n\n
-   _____                _        _ 
+   _____                _        _
   / ____|              | |      | |
  | |     _ __ _   _ ___| |_ __ _| |
  | |    | '__| | | / __| __/ _` | |
  | |____| |  | |_| \\__ \\ || (_| | |
   \\_____|_|   \\__, |___/\\__\\__,_|_|
-        _____  __/ |               
-       / ____||___/ |              
-      | |     __ _| | ___          
-      | |    / _` | |/ __|         
-      | |___| (_| | | (__          
-       \\_____\\__,_|_|\\___|    
+        _____  __/ |
+       / ____||___/ |
+      | |     __ _| | ___
+      | |    / _` | |/ __|
+      | |___| (_| | | (__
+       \\_____\\__,_|_|\\___|
 
     ┌────────────────────────────────────────────┐
-    │                                            │         
-    │    Expression -> [ {} ]                            
     │                                            │
-    │    Calculated Solution -> [ {} ]    
+    │    Expression -> [ {} ]
+    │                                            │
+    │    Calculated Solution -> [ {} ]
     │                                            │
     └────────────────────────────────────────────┘
     ", neweq, return_res);
