@@ -120,7 +120,7 @@ async fn exec() -> Result<(), Error> {
 		}
 
 		_ => { return Err(Error::UnknownCommand("command not yet implemented".to_string())) },
-	}
+	};
 
 	Ok(())
 }
