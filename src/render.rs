@@ -151,8 +151,6 @@ impl Renderer {
 				} else {
 					self.buffer.chars[i][j].write(ScreenChar { character: *col as u8, colour: self.col_code});
 				}
-
-
 			}
 		}
 	}
