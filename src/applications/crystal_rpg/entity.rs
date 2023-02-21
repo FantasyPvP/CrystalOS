@@ -1,5 +1,8 @@
-use crate::crystal_rpg::player::Player;
-use crate::crystal_rpg::engine::Event;
+use super::player::Player;
+use super::engine::Event;
+
+use alloc::{string::String, vec::Vec, vec};
+
 pub trait Entity {
     fn attack_entity(&mut self, _: &mut EntityObject) -> (AttackResult, Option<Vec<Event>>) {
         (AttackResult::Miss, None)
@@ -49,8 +52,8 @@ impl Enemy {
         }
     }
 }
-impl std::fmt::Display for Enemy {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+impl core::fmt::Display for Enemy {
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
         write!(f, "Enemy: {}/{}", self.health_points, self.max_health_points)
     }
 }
@@ -67,7 +70,7 @@ impl Entity for Enemy {
 
         let dmg: f64;
 
-        let r = crate::random() as f64;
+        let r = crate::std::Random::int(0, 125) as f64;
         let rs = self.speed / entity.speed * 100 as f64;
 
         let attack = if r < rs * 0.2 {

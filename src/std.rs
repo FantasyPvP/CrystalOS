@@ -9,7 +9,9 @@ use crate::shell::{
     CMD
 };
 use crate::os::OS;
-use crate::{println};
+
+pub use crate::{println, print, serial_print, serial_println};
+
 use alloc::{boxed::Box, string::{String, ToString}, vec::Vec};
 use crate::vga_buffer::{Color, write};
 

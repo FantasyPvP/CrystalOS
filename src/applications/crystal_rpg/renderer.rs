@@ -1,5 +1,9 @@
 use lazy_static::lazy_static;
-use std::sync::Mutex;
+use spin::Mutex;
+use alloc::{vec::Vec, string::String};
+use crate::std::{println, serial_println};
+
+use crate::render;
 
 const BUFFER_HEIGHT: usize = 25;
 const BUFFER_WIDTH: usize = 80;
@@ -38,13 +42,13 @@ impl Element {
         for (i, row) in self.frame.iter().enumerate() {
             for (j, col) in row.iter().enumerate() {
                 println!("{} {} {}", i, j, col);
-                RENDERER.lock().unwrap().frame[i + pos.1 as usize][j + pos.0 as usize] = *col;
+                RENDERER.lock().frame[i + pos.1 as usize][j + pos.0 as usize] = *col;
             };
-            println!("{}",  RENDERER.lock().unwrap())
         }
     }
 }
 
+#[derive(Clone, Copy)]
 pub struct Renderer {
     frame: [ [ char; BUFFER_WIDTH ]; BUFFER_HEIGHT],
 }
@@ -52,7 +56,7 @@ pub struct Renderer {
 
 impl Renderer {
     pub fn render_frame(&self) {
-        println!("{}", self);
+        render::RENDERER.lock().render_frame(self.frame)
     }
 
     fn new() -> Self {
@@ -69,6 +73,10 @@ impl Renderer {
         }
 
         Renderer { frame: frame }
+    }
+
+    pub fn get_frame(&self) -> &[ [ char; BUFFER_WIDTH ]; BUFFER_HEIGHT] {
+        &self.frame
     }
 
 }

@@ -1,4 +1,5 @@
-use crate::crystal_rpg::entity::Enemy;
+use super::entity::Enemy;
+use alloc::vec::Vec;
 
 pub enum Event {
     PlayerKilled,

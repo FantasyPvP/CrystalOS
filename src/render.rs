@@ -129,6 +129,7 @@ impl Renderer {
         for (i, row) in self.userspace.chars.clone().iter().enumerate() {
 
             let tmp = self.buffer.chars[i].clone();
+
             for (j, col) in self.userspace.chars[i].clone().iter().enumerate() {
                 self.buffer.chars[i][j].write(col.to_owned())
             }
@@ -140,6 +141,21 @@ impl Renderer {
 
         Ok(())
     }
+
+	pub fn render_frame(&mut self, frame: [ [ char; BUFFER_WIDTH ]; BUFFER_HEIGHT]) {
+		for (i, row) in frame.iter().enumerate() {
+			for (j, col) in row.iter().enumerate() {
+
+				if let Some(c) = self.fancy_char(*col) {
+					self.buffer.chars[i][j].write(ScreenChar { character: c, colour: self.col_code});
+				} else {
+					self.buffer.chars[i][j].write(ScreenChar { character: *col as u8, colour: self.col_code});
+				}
+
+
+			}
+		}
+	}
 
 
 	pub fn write_string(&mut self, string: &str) {

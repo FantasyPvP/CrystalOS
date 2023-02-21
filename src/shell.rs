@@ -9,6 +9,7 @@ use crate::applications::{
 	rickroll::Rickroll,
 	crystalfetch::CrystalFetch,
 	tasks::Tasks,
+	crystal_rpg::init::GameLoop,
 };
 use crate::tasks::keyboard::ScanCodeStream;
 use pc_keyboard::{layouts, DecodedKey, HandleControl, Keyboard, ScancodeSet1};
@@ -85,10 +86,16 @@ async fn exec() -> Result<(), Error> {
 			let mut cmd = CrystalFetch::new();
 			cmd.run(args).await?;
 		}
-			"tasks" => {
+		"tasks" => {
 			let mut cmd = Tasks::new();
 			cmd.run(args).await?;
 		}
+		"play" => {
+			let mut gameloop = GameLoop::new();
+			gameloop.run(args).await;
+		}
+
+
 		// direct OS functions (not applications)
 
 		"echo" => { println!("Crystal: '{}'", args.into_iter().map(|mut s| { s.push_str(" "); s}).collect::<String>()) },

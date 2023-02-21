@@ -1,35 +1,17 @@
-use async_std::task;
 use async_trait::async_trait;
 use rand::prelude::*;
 
-mod crystal_rpg;
+use super::player::Player;
+use super::entity::{Entity, Enemy, EntityObject};
+use super::engine::{eventcheck, Choice, Event};
+use super::renderer::{RENDERER, Element};
 
-use crystal_rpg::{
-    player::Player,
-    entity::{Entity, Enemy, EntityObject},
-    engine::{eventcheck, Choice, Event},
-    renderer::{RENDERER, Element},
+use alloc::{boxed::Box, string::{String, ToString}, vec::Vec, format, borrow::ToOwned};
+use crate::std::{self, println, serial_println};
+use crate::shell::{
+	Application,
+	Error,
 };
-
-#[async_std::main]
-async fn main() {
-    let mut game = GameLoop::new();
-    game.run(Vec::<String>::new()).await.unwrap();
-}
-
-#[derive(Debug)]
-pub enum Error {
-    Any(String),
-}
-
-#[async_trait]
-pub trait Application {
-	fn new() -> Self;
-
-	async fn run(&mut self, args: Vec<String>) -> Result<(), Error> {
-		Ok(())
-	}
-}
 
 
 pub struct GameLoop;
@@ -42,8 +24,7 @@ impl Application for GameLoop {
     }
     async fn run(&mut self, _args: Vec<String>) -> Result<(), Error> {
 
-        let mut username: String = String::new();
-        std::io::stdin().read_line(&mut username).unwrap();
+        let mut username: String = std::stdin().await;
         username = username.trim().to_string();
 
         let mut player = Player::new(username);
@@ -73,25 +54,43 @@ impl Application for GameLoop {
             println!("[{}\n[{}", player, enemy);
         }
 
-        RENDERER.lock().unwrap().render_frame();
+        RENDERER.lock().render_frame();
+
         let string = String::from(format!(
-"┌──────────────────────────────────────────────────────────┐
-│   {}                                                    
-│   {} / {}                                              
-└──────────────────────────────────────────────────────────┘"
+"┌────────────────────────────┐
+│   {}                        
+│   {} / {}                     
+└────────────────────────────┘"
         , player.username, player.health_points, player.max_health_points));
         let mut healthbar = Element::from_str(string);
         healthbar.render((1, 1));
 
+        RENDERER.lock().render_frame();
+
+        let fr = RENDERER.lock().get_frame().to_owned();
+        serial_println!("{}", {
+            let mut string = String::new();
+            for row in fr {
+                let mut r = String::new();
+                for col in row {
+                    r.push(col);
+                }
+                string.push_str(&r);
+                string.push('\n')
+            };
+            string
+        });
 
 
-        RENDERER.lock().unwrap().render_frame();
+        loop {}
+
+
         Ok(())
     }
 }
 
 fn random() -> u64 {
-    let mut r = crate::std::Random::random_int(0, 125);
+    let mut r = crate::std::Random::int(0, 125) as u64;
     r
 }
 
