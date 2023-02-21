@@ -152,6 +152,25 @@ impl App { // name must be the same as the name of the struct
 }
 ```
 
+UPDATE: 21/02/23
+ - created a standard library of functions that any application can use
+ - implemented a random function to the standard library that can generate random numbers in a range
+ - added the print and println macros to be directly accessible from the standard library 
+ - added global functions for getting input as a keystroke or from the command line
+```rust
+
+pub async fn stdin() -> String // returns the string inputted by the user
+
+pub async fn stdchar() -> char // returns the next keystroke 
+
+pub fn crate::std::Random::int(min: usize, max: usize) -> usize // returns random integer in range (min <= x <= max)
+
+pub fn crate::std::Random::selection<T: Clone>(list: Vec<T>) -> T // returns random element of vector argument
+```
+ - 
+
+
+
 ## future plans:
 
 eventually i want to try rewriting the majority of the code for the VGA buffer.
