@@ -5,7 +5,7 @@ use alloc::{string::String};
 lazy_static! {
 	pub static ref OS: Mutex<SysInfo> = Mutex::new(SysInfo {
 		os: String::from("CrystalOS Alpha"),
-		version: String::from("0.2.0"),
+		version: String::from("0.2.1"),
 	});
 }
 

@@ -47,8 +47,8 @@ struct ScreenChar {
 	colour: ColorCode,
 }
 
-const BUFFER_HEIGHT: usize = 25;
-const BUFFER_WIDTH: usize = 80;
+pub const BUFFER_HEIGHT: usize = 25;
+pub const BUFFER_WIDTH: usize = 80;
 
 #[repr(transparent)]
 struct Buffer {
@@ -126,7 +126,7 @@ impl Renderer {
 
     fn buffer_swap(&mut self) -> Result<(), ()> {
 
-        for (i, row) in self.userspace.chars.clone().iter().enumerate() {
+        for (i, _) in self.userspace.chars.clone().iter().enumerate() {
 
             let tmp = self.buffer.chars[i].clone();
 
@@ -283,10 +283,30 @@ pub fn write(args: fmt::Arguments, cols: (Color, Color)) {
 	})
 }
 
+#[doc(hidden)]
+pub fn _log(args: fmt::Arguments) {
+	use core::fmt::Write;
+	use x86_64::instructions::interrupts;
 
+	interrupts::without_interrupts(|| {
+		let mut writer = RENDERER.lock();
+		writer.col_code = ColorCode::new(Color::Yellow, Color::Black);
+		writer.write_fmt(args).unwrap();
+		
+		//WRITER.lock().write_fmt(args).unwrap();
+	});
+}
 
+#[macro_export]
+macro_rules! println_log {
+	() => ($crate::print_log!("/n"));
+	($($arg:tt)*) => ($crate::print_log!("{}\n", format_args!($($arg)*)));
+}
 
-
+#[macro_export]
+macro_rules! print_log {
+	($($arg:tt)*) => ($crate::render::_log(format_args!($($arg)*)));
+}
 
 
 
@@ -298,7 +318,7 @@ macro_rules! println {
 
 #[macro_export]
 macro_rules! print {
-	($($arg:tt)*) => ($crate::render::_print(format_args!($($arg)*)));
+	($($arg:tt)*) => ($crate::kernel::render::_print(format_args!($($arg)*)));
 }
 
 

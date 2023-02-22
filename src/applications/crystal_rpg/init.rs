@@ -1,16 +1,21 @@
 use async_trait::async_trait;
 use rand::prelude::*;
 
-use super::player::Player;
-use super::entity::{Entity, Enemy, EntityObject};
-use super::engine::{eventcheck, Choice, Event};
-use super::renderer::{RENDERER, Element};
+use super::{
+    renderer::{RENDERER, Element},
+    engine::{eventcheck, Choice, Event},
+    entity::{Entity, Enemy, EntityObject},
+    player::Player,
+};
 
 use alloc::{boxed::Box, string::{String, ToString}, vec::Vec, format, borrow::ToOwned};
-use crate::std::{self, println, serial_println};
-use crate::shell::{
-	Application,
-	Error,
+
+use crate::{ 
+    shell::{
+	    Application,
+	    Error,
+    },
+    std::{io, random, println, serial_println},
 };
 
 
@@ -24,7 +29,7 @@ impl Application for GameLoop {
     }
     async fn run(&mut self, _args: Vec<String>) -> Result<(), Error> {
 
-        let mut username: String = std::stdin().await;
+        let mut username: String = io::stdin().await;
         username = username.trim().to_string();
 
         let mut player = Player::new(username);
@@ -90,7 +95,7 @@ impl Application for GameLoop {
 }
 
 fn random() -> u64 {
-    let mut r = crate::std::Random::int(0, 125) as u64;
+    let mut r = random::Random::int(0, 125) as u64;
     r
 }
 

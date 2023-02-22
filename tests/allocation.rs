@@ -16,8 +16,8 @@ use alloc::{ boxed::Box, vec::Vec };
 entry_point!(main);
 
 fn main(boot_info: &'static BootInfo) -> ! {
-	use CrystalOS::allocator;
-	use CrystalOS::memory::{self, BootInfoFrameAllocator};
+	use CrystalOS::kernel::allocator;
+	use CrystalOS::kernel::memory::{self, BootInfoFrameAllocator};
 	use x86_64::VirtAddr;
 
 	CrystalOS::init();
@@ -60,7 +60,7 @@ fn vec_allocation() {
 
 #[test_case]
 fn reallocation() {
-	use CrystalOS::allocator::HEAP_SIZE;
+	use CrystalOS::kernel::allocator::HEAP_SIZE;
 
 	for i in 0..HEAP_SIZE {
 		let x = Box::new(i);

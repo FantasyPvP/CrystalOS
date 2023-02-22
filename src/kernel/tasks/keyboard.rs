@@ -1,3 +1,7 @@
+use lazy_static::lazy_static;
+use spin::Mutex;
+use x86_64::instructions::interrupts;
+
 
 use conquer_once::spin::OnceCell;
 use crossbeam_queue::ArrayQueue;
@@ -10,6 +14,8 @@ use futures_util::stream::StreamExt;
 use pc_keyboard::{layouts, DecodedKey, HandleControl, Keyboard, ScancodeSet1};
 use crate::print;
 use crate::shell::CMD;
+use crate::kernel::render::RENDERER;
+use alloc::{string::String};
 
 static WAKER: AtomicWaker = AtomicWaker::new();
 static SCANCODE_QUEUE: OnceCell<ArrayQueue<u8>> = OnceCell::uninit();
@@ -35,6 +41,78 @@ pub async fn print_keypresses() {
 }
 */
 
+lazy_static! {
+	pub static ref KEYBOARD: Mutex<KeyboardHandler> = Mutex::new(KeyboardHandler::new());
+}
+
+pub struct KeyboardHandler {
+	scancodes: ScanCodeStream,
+	keyboard: Keyboard<layouts::Uk105Key, ScancodeSet1>,
+}
+
+impl KeyboardHandler {
+	pub fn new() -> KeyboardHandler {
+		KeyboardHandler {
+			scancodes: ScanCodeStream::new(),
+			keyboard: Keyboard::new(layouts::Uk105Key, ScancodeSet1, HandleControl::Ignore),
+		}
+	}
+
+	pub async fn get_keystroke_inner(&mut self) -> Option<char> {
+		loop {
+			if let Some(scancode) = self.scancodes.next().await {
+				if let Ok(Some(key_event)) = self.keyboard.add_byte(scancode) {
+					if let Some(key) = self.keyboard.process_keyevent(key_event) {
+						match key {
+							DecodedKey::Unicode(character) => {
+								if character == b'\x08' as char { // checks if the character is a backspace
+									interrupts::without_interrupts(|| {
+										RENDERER.lock().backspace(); // runs the backspace function of the vga buffer to remove the last character
+									});
+									return None;
+								} else {
+									return Some(character);
+								}
+							},
+							DecodedKey::RawKey(key) => { print!("{:?}", key) },
+						}
+					}
+				}
+			}
+		}
+	}
+
+	pub async fn get_keystroke(&mut self) -> char {
+		loop {
+			match self.get_keystroke_inner().await {
+				Some(c) => return c,
+				None => ()
+			}
+		}
+	}
+
+
+	pub async fn get_string(&mut self) -> String {
+		let mut val = String::new();
+		loop {
+			let character = match self.get_keystroke_inner().await {
+				Some(c) => { c },
+				None => { val.pop(); continue; },
+			};
+			print!("{}", character);
+			let (character, execute): (char, bool) = match character {
+				'\n' => (character, true),
+				_ => (character, false),
+			};
+			val.push(character);
+			if execute {
+				return val;
+			}
+		}
+
+	}
+
+}
 
 pub(crate) fn add_scancode(scancode: u8) {
 	if let Ok(queue) = SCANCODE_QUEUE.try_get() {

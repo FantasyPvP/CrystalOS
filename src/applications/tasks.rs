@@ -12,7 +12,7 @@ use alloc::{
 	borrow::ToOwned,
 };
 
-use crate::std::Random;
+use crate::std::random;
 
 
 lazy_static! {
@@ -49,7 +49,7 @@ impl Application for Tasks {
 			let arg2 = args[1].clone();
 			if arg2 == String::from("random") {
 				let len = TASKS.lock().tasks.len();
-				self.select_task(Random::int(0, len -1) as i32);
+				self.select_task(random::Random::int(0, len -1) as i32);
 			} else if arg2.parse::<u64>().is_ok() {
 				()
 			}

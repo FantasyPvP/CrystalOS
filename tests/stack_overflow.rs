@@ -13,7 +13,7 @@ use CrystalOS::{exit, QemuExitCode, serial_println, serial_print};
 pub extern "C" fn _start() -> ! {
 	serial_print!("stack_overflow::stack_overflow...\t");
 
-	CrystalOS::gdt::init();
+	CrystalOS::kernel::gdt::init();
 	init_test_idt();
 
 	stack_overflow();
@@ -36,7 +36,7 @@ lazy_static! {
 	static ref TEST_IDT: InterruptDescriptorTable = {
 		let mut idt = InterruptDescriptorTable::new();
 		unsafe {
-			idt.double_fault.set_handler_fn(test_double_fault_handler).set_stack_index(CrystalOS::gdt::DOUBLE_FAULT_IST_INDEX);
+			idt.double_fault.set_handler_fn(test_double_fault_handler).set_stack_index(CrystalOS::kernel::gdt::DOUBLE_FAULT_IST_INDEX);
 		}
 		idt
 	};

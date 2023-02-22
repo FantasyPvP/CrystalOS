@@ -2,6 +2,8 @@ use super::player::Player;
 use super::engine::Event;
 
 use alloc::{string::String, vec::Vec, vec};
+use crate::std::random;
+
 
 pub trait Entity {
     fn attack_entity(&mut self, _: &mut EntityObject) -> (AttackResult, Option<Vec<Event>>) {
@@ -70,7 +72,7 @@ impl Entity for Enemy {
 
         let dmg: f64;
 
-        let r = crate::std::Random::int(0, 125) as f64;
+        let r = random::Random::int(0, 125) as f64;
         let rs = self.speed / entity.speed * 100 as f64;
 
         let attack = if r < rs * 0.2 {

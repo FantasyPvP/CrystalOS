@@ -1,21 +1,34 @@
-
 use async_trait::async_trait;
 use lazy_static::lazy_static;
-use crate::{println, print, alloc::string::ToString};
-use alloc::{string::String, vec::Vec, boxed::Box};
 use spin::Mutex;
-use crate::applications::{
-	calc::Calculator,
-	rickroll::Rickroll,
-	crystalfetch::CrystalFetch,
-	tasks::Tasks,
-	crystal_rpg::init::GameLoop,
-};
-use crate::tasks::keyboard::ScanCodeStream;
-use pc_keyboard::{layouts, DecodedKey, HandleControl, Keyboard, ScancodeSet1};
-use futures_util::stream::StreamExt;
-use crate::render::{write, Color, RENDERER};
 use x86_64::instructions::interrupts;
+
+use alloc::{string::{String, ToString}, vec::Vec, boxed::Box};
+
+use crate::{
+	kernel::render::{write, Color, RENDERER},
+	kernel::tasks::keyboard::KEYBOARD,
+	applications::{
+		calc::Calculator,
+		rickroll::Rickroll,
+		crystalfetch::CrystalFetch,
+		tasks::Tasks,
+		crystal_rpg::init::GameLoop,
+	},
+	println,
+	print, 
+};
+
+
+
+
+
+
+
+
+
+
+
 
 lazy_static! {
 	pub static ref CMD: Mutex<CommandHandler> = Mutex::new(CommandHandler::new());
@@ -39,12 +52,12 @@ pub async fn eventloop() {
 	let string = String::from(" ");
 	let mut vec: Vec<String> = Vec::new();
 	vec.push(string);
-	fetch.run(vec).await;
+	fetch.run(vec).await.unwrap();
 
 	CMD.lock().prompt();
 
 	loop {
-		let string = CMD.lock().get_string().await;
+		let string = KEYBOARD.lock().get_string().await;
 		CMD.lock().current.push_str(&string);
 		match exec().await {
 			Ok(_) => { (); },
@@ -69,7 +82,7 @@ async fn exec() -> Result<(), Error> {
 
 	let (cmd, args) = match CommandHandler::parse_args(current) {
 		Ok((cmd, args)) => { (cmd, args) },
-		Err(x) => { return Err(Error::EmptyCommand); }
+		Err(_) => { return Err(Error::EmptyCommand); }
 	};
 	match cmd.as_str() {
 		"calculate"|"calc"|"solve" => {
@@ -92,7 +105,7 @@ async fn exec() -> Result<(), Error> {
 		}
 		"play" => {
 			let mut gameloop = GameLoop::new();
-			gameloop.run(args).await;
+			gameloop.run(args).await?;
 		}
 
 
@@ -107,12 +120,11 @@ async fn exec() -> Result<(), Error> {
 		}
 
 		"print" => {
-			use crate::os::OS;
+			use crate::kernel::os::OS;
 			let x: String = OS.lock().version.clone();
 			println!("{}", x);
 		}
 		"switch" => {
-			use crate::render::RENDERER;
 			if RENDERER.lock().sandbox == true {
 				RENDERER.lock().text_mode().unwrap();
 			} else {
@@ -120,7 +132,7 @@ async fn exec() -> Result<(), Error> {
 			}
 		}
 		"random" => {
-			use crate::std::Random;
+			use crate::std::random::Random;
 			let vec = Vec::from(["a", "b", "c", "d", "e", "f"]);
 			let sel = Random::selection(vec);
 			println!("{}", sel);
@@ -139,8 +151,6 @@ async fn exec() -> Result<(), Error> {
 pub struct CommandHandler {
 	current: String,
 	history: CmdHistory,
-	scancodes: ScanCodeStream,
-	keyboard: Keyboard<layouts::Uk105Key, ScancodeSet1>,
 }
 
 impl CommandHandler {
@@ -148,8 +158,6 @@ impl CommandHandler {
 		let handler = Self {
 			current: String::new(),
 			history: CmdHistory { history: Vec::new() },
-			scancodes: ScanCodeStream::new(),
-			keyboard: Keyboard::new(layouts::Uk105Key, ScancodeSet1, HandleControl::Ignore),
 		};
 		handler
 	}
@@ -177,59 +185,6 @@ impl CommandHandler {
 	// this function is activated every time the user presses a key on the keyboard
 	// it accesses the queue of keys (a static ref in src/tasks/keyboard.rs)
 
-	pub async fn get_keystroke_inner(&mut self) -> Option<char> {
-		loop {
-			if let Some(scancode) = self.scancodes.next().await {
-				if let Ok(Some(key_event)) = self.keyboard.add_byte(scancode) {
-					if let Some(key) = self.keyboard.process_keyevent(key_event) {
-						match key {
-							DecodedKey::Unicode(character) => {
-								if character == b'\x08' as char { // checks if the character is a backspace
-									interrupts::without_interrupts(|| {
-										RENDERER.lock().backspace(); // runs the backspace function of the vga buffer to remove the last character
-									});
-									return None;
-								} else {
-									return Some(character);
-								}
-							},
-							DecodedKey::RawKey(key) => { print!("{:?}", key) },
-						}
-					}
-				}
-			}
-		}
-	}
-
-	pub async fn get_keystroke(&mut self) -> char {
-		loop {
-			match self.get_keystroke_inner().await {
-				Some(c) => return c,
-				None => ()
-			}
-		}
-	}
-
-
-	pub async fn get_string(&mut self) -> String {
-		let mut val = String::new();
-		loop {
-			let character = match self.get_keystroke_inner().await {
-				Some(c) => { c },
-				None => { val.pop(); continue; },
-			};
-			print!("{}", character);
-			let (character, execute): (char, bool) = match character {
-				'\n' => (character, true),
-				_ => (character, false),
-			};
-			val.push(character);
-			if execute {
-				return val;
-			}
-		}
-
-	}
 
 	// displays a text prompt for the user to type into.
 	// this is a separate function so that it can be developed as necessary later on
@@ -262,7 +217,7 @@ pub enum Error {
 pub trait Application {
 	fn new() -> Self;
 
-	async fn run(&mut self, args: Vec<String>) -> Result<(), Error> {
+	async fn run(&mut self, _: Vec<String>) -> Result<(), Error> {
 		Ok(())
 	}
 }

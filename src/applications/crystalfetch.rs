@@ -1,12 +1,18 @@
 use async_trait::async_trait;
-use crate::shell::{
-	Application,
-	Error,
-};
-use crate::os::OS;
-use crate::{println};
 use alloc::{boxed::Box, string::String, vec::Vec};
-use crate::vga_buffer::{Color, write};
+
+use crate::{
+    kernel::{
+        os::OS,
+        render::{Color, write}
+    },
+    println,
+    shell::{
+        Application,
+        Error,
+    },
+};
+
 
 pub struct CrystalFetch {}
 

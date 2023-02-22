@@ -1,9 +1,13 @@
-use super::items::{Item, Armour};
-use super::entity::{Entity, EntityObject, AttackResult};
-use super::engine::Event;
+use super::{
+    items::{Item, Armour},
+    entity::{Entity, EntityObject, AttackResult},
+    engine::Event,
+};
+
+
 use alloc::{string::String, vec::Vec, vec};
 
-use crate::std;
+use crate::std::random;
 
 pub struct Player {
     pub username: String,
@@ -48,7 +52,7 @@ impl Entity for Player {
 
         let dmg: f64;
 
-        let r = std::Random::int(0, 125) as f64;
+        let r = random::Random::int(0, 125) as f64;
         let rs = self.speed / entity.speed * 100 as f64;
 
         let attack = if r < rs * 0.2 {

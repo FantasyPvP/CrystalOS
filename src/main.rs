@@ -6,11 +6,10 @@
 
 use core::panic::PanicInfo;
 use CrystalOS::{println, print, println_log, print_log};
-use CrystalOS::tasks::{Task, executor::Executor, keyboard};
+use CrystalOS::kernel::tasks::{Task, executor::Executor, keyboard};
 use bootloader::{BootInfo, entry_point};
 extern crate alloc;
 use alloc::{boxed::Box, vec, vec::Vec, rc::Rc, string, string::String};
-use CrystalOS::vga_buffer;
 use CrystalOS::shell;
 
 #[cfg(not(test))]
@@ -30,9 +29,9 @@ entry_point!(main);
 
 
 fn main(boot_info: &'static BootInfo) -> ! {
-	use CrystalOS::allocator;
-	use CrystalOS::memory;
-	use CrystalOS::memory::BootInfoFrameAllocator;
+	use CrystalOS::kernel::allocator;
+	use CrystalOS::kernel::memory;
+	use CrystalOS::kernel::memory::BootInfoFrameAllocator;
 	use x86_64::{structures::paging::{Page, Translate}, VirtAddr};
 	
 	CrystalOS::init();
@@ -53,6 +52,8 @@ fn main(boot_info: &'static BootInfo) -> ! {
 	
 	#[cfg(test)]
 	test_main();
+
+	loop {}
 }
 
 

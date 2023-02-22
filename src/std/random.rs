@@ -1,42 +1,14 @@
-use async_trait::async_trait;
-use futures_util::future::OrElse;
-use lazy_static::lazy_static;
-use spin::Mutex;
-
-use crate::shell::{
-	Application,
-	Error,
-    CMD
-};
-use crate::os::OS;
-
-pub use crate::{println, print, serial_print, serial_println};
 
 use alloc::{boxed::Box, string::{String, ToString}, vec::Vec};
-use crate::vga_buffer::{Color, write};
-
-use rand::{Rng, SeedableRng};
-use rand::rngs::SmallRng;
-use rand::RngCore;
-
-// this is where the standard library for the operating system will be defined
-// my aim is to completely separate this from the shell.
-
-// these functions should all be asynchronous.
+use rand::{Rng, SeedableRng, rngs::SmallRng, RngCore};
+use spin::Mutex;
+use lazy_static::lazy_static;
 
 lazy_static! {
     pub static ref RANDOM: Mutex<SmallRng> = Mutex::new(SmallRng::seed_from_u64(1));
 }
 
-pub async fn stdin() -> String {
-    let string = CMD.lock().get_string().await;
-    string
-}
 
-pub async fn stdchar() -> char {
-    let chr = CMD.lock().get_keystroke().await;
-    chr
-}
 
 
 pub struct Random;

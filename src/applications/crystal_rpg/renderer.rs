@@ -1,16 +1,16 @@
 use lazy_static::lazy_static;
 use spin::Mutex;
 use alloc::{vec::Vec, string::String};
-use crate::std::{println, serial_println};
+use crate::std::io::{println, serial_println, Frame, render_frame};
+use crate::kernel::render::{self, BUFFER_WIDTH, BUFFER_HEIGHT};
 
-use crate::render;
 
-const BUFFER_HEIGHT: usize = 25;
-const BUFFER_WIDTH: usize = 80;
 
 lazy_static! {
     pub static ref RENDERER: Mutex<Renderer> = Mutex::new(Renderer::new() );
 }
+
+
 
 #[derive(Clone)]
 pub struct Element {
@@ -42,7 +42,7 @@ impl Element {
         for (i, row) in self.frame.iter().enumerate() {
             for (j, col) in row.iter().enumerate() {
                 println!("{} {} {}", i, j, col);
-                RENDERER.lock().frame[i + pos.1 as usize][j + pos.0 as usize] = *col;
+                RENDERER.lock().frame.frame[i + pos.1 as usize][j + pos.0 as usize] = *col;
             };
         }
     }
@@ -50,13 +50,13 @@ impl Element {
 
 #[derive(Clone, Copy)]
 pub struct Renderer {
-    frame: [ [ char; BUFFER_WIDTH ]; BUFFER_HEIGHT],
+    frame: Frame,
 }
 
 
 impl Renderer {
     pub fn render_frame(&self) {
-        render::RENDERER.lock().render_frame(self.frame)
+        render_frame(self.frame);
     }
 
     fn new() -> Self {
@@ -72,11 +72,11 @@ impl Renderer {
             }
         }
 
-        Renderer { frame: frame }
+        Renderer { frame: Frame { frame } }
     }
 
     pub fn get_frame(&self) -> &[ [ char; BUFFER_WIDTH ]; BUFFER_HEIGHT] {
-        &self.frame
+        &self.frame.frame
     }
 
 }
@@ -85,7 +85,7 @@ impl Renderer {
 impl core::fmt::Display for Renderer {
     fn fmt(&self, _: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
         println!(" ");
-        for row in &self.frame {
+        for row in &self.frame.frame {
             println!("{}", row.iter().collect::<String>());
         };
         Ok(())

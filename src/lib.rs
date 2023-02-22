@@ -12,19 +12,12 @@
 
 use core::panic::PanicInfo;
 use spin::Mutex;
-pub mod serial;
-pub mod vga_buffer;
-pub mod interrupts;
-pub mod gdt;
-pub mod memory;
-pub mod allocator;
-pub mod tasks;
-pub mod applications;
-pub mod os;
-pub mod shell;
-pub mod threading;
-pub mod render;
+
+pub mod kernel;
 pub mod std;
+pub mod shell;
+pub mod applications;
+
 extern crate alloc;
 //extern crate fatfs;
 
@@ -43,9 +36,9 @@ fn alloc_error_handler(layout: alloc::alloc::Layout) -> ! {
 
 
 pub fn init() {
-	gdt::init();
-	interrupts::init_idt();
-	unsafe { interrupts::PICS.lock().initialize() };
+	kernel::gdt::init();
+	kernel::interrupts::init_idt();
+	unsafe { kernel::interrupts::PICS.lock().initialize() };
 	x86_64::instructions::interrupts::enable();
 }
 
