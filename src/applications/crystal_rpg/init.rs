@@ -58,9 +58,10 @@ impl Application for GameLoop {
             println!("{}", eventcheck(enemy.attack_entity(&mut EntityObject::Player(&mut player))));
             println!("[{}\n[{}", player, enemy);
         }
-
+ 
         RENDERER.lock().render_frame();
 
+       
         let string = String::from(format!(
 "┌────────────────────────────┐
 │   {}                        
@@ -69,6 +70,14 @@ impl Application for GameLoop {
         , player.username, player.health_points, player.max_health_points));
         let mut healthbar = Element::from_str(string);
         healthbar.render((1, 1));
+
+        let new2 = String::from("[eeeeee]");
+        let mut new = Element::from_str(new2);
+
+
+        new.render((10, 10));
+
+
 
         RENDERER.lock().render_frame();
 
@@ -88,7 +97,6 @@ impl Application for GameLoop {
 
 
         loop {}
-
 
         Ok(())
     }
