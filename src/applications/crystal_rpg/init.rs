@@ -2,7 +2,6 @@ use async_trait::async_trait;
 use rand::prelude::*;
 
 use super::{
-    renderer::{RENDERER, Element},
     engine::{eventcheck, Choice, Event},
     entity::{Entity, Enemy, EntityObject},
     player::Player,
@@ -15,7 +14,10 @@ use crate::{
 	    Application,
 	    Error,
     },
-    std::{io, random, println, serial_println},
+    std::{
+        io::{self, println, serial_println, FRAMEGEN, Element},
+        random, 
+    },
 };
 
 
@@ -59,7 +61,7 @@ impl Application for GameLoop {
             println!("[{}\n[{}", player, enemy);
         }
  
-        RENDERER.lock().render_frame();
+        FRAMEGEN.lock().render_frame();
 
        
         let string = String::from(format!(
@@ -79,9 +81,9 @@ impl Application for GameLoop {
 
 
 
-        RENDERER.lock().render_frame();
+        FRAMEGEN.lock().render_frame();
 
-        let fr = RENDERER.lock().get_frame().to_owned();
+        let fr = FRAMEGEN.lock().get_frame().to_owned();
         serial_println!("{}", {
             let mut string = String::new();
             for row in fr {

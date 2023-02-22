@@ -309,7 +309,6 @@ macro_rules! print_log {
 }
 
 
-
 #[macro_export]
 macro_rules! println {
 	() => ($crate::print!("/n"));
@@ -320,6 +319,7 @@ macro_rules! println {
 macro_rules! print {
 	($($arg:tt)*) => ($crate::kernel::render::_print(format_args!($($arg)*)));
 }
+
 
 
 
