@@ -2,7 +2,6 @@ use crate::{
     kernel::render::{Color, write, RENDERER, BUFFER_WIDTH, BUFFER_HEIGHT},
     kernel::tasks::keyboard::KEYBOARD,
     kernel::os::OS,
-    shell::{Application, Error, CMD }
 };
 use alloc::{boxed::Box, string::{String, ToString}, vec::Vec};
 

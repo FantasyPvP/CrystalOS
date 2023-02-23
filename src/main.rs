@@ -10,7 +10,7 @@ use CrystalOS::kernel::tasks::{Task, executor::Executor, keyboard};
 use bootloader::{BootInfo, entry_point};
 extern crate alloc;
 use alloc::{boxed::Box, vec, vec::Vec, rc::Rc, string, string::String};
-use CrystalOS::shell;
+use CrystalOS::applications::shell;
 
 #[cfg(not(test))]
 #[panic_handler]

@@ -1,5 +1,5 @@
 use alloc::{string::String, vec::Vec, boxed::Box};
-use crate::shell::{
+use crate::std::application::{
 	Application,
 	Error
 };

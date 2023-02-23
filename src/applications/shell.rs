@@ -8,13 +8,8 @@ use alloc::{string::{String, ToString}, vec::Vec, boxed::Box};
 use crate::{
 	kernel::render::{write, Color, RENDERER},
 	kernel::tasks::keyboard::KEYBOARD,
-	applications::{
-		calc::Calculator,
-		rickroll::Rickroll,
-		crystalfetch::CrystalFetch,
-		tasks::Tasks,
-		crystal_rpg::init::GameLoop,
-	},
+	applications::*,
+	std::application::{Error, Application},
 	println,
 	print, 
 };
@@ -48,7 +43,7 @@ pub async fn command_handler() {
 pub async fn eventloop() {
 	println!("running!");
 
-	let mut fetch = CrystalFetch::new();
+	let mut fetch = crystalfetch::CrystalFetch::new();
 	let string = String::from(" ");
 	let mut vec: Vec<String> = Vec::new();
 	vec.push(string);
@@ -84,27 +79,28 @@ async fn exec() -> Result<(), Error> {
 		Ok((cmd, args)) => { (cmd, args) },
 		Err(_) => { return Err(Error::EmptyCommand); }
 	};
+
 	match cmd.as_str() {
 		"calculate"|"calc"|"solve" => {
-			let mut cmd = Calculator::new();
+			let mut cmd = calc::Calculator::new();
 			cmd.run(args).await?;
 		}
 
 		"rickroll" => {
-			let mut cmd = Rickroll::new();
+			let mut cmd = rickroll::Rickroll::new();
 			cmd.run(args).await?;
 		}
 
 		"crystalfetch" => {
-			let mut cmd = CrystalFetch::new();
+			let mut cmd = crystalfetch::CrystalFetch::new();
 			cmd.run(args).await?;
 		}
 		"tasks" => {
-			let mut cmd = Tasks::new();
+			let mut cmd = tasks::Tasks::new();
 			cmd.run(args).await?;
 		}
 		"play" => {
-			let mut gameloop = GameLoop::new();
+			let mut gameloop = crystal_rpg::init::GameLoop::new();
 			gameloop.run(args).await?;
 		}
 
@@ -206,18 +202,6 @@ struct CmdHistory {
 	history: Vec<String>,
 }
 
-#[derive(Debug)]
-pub enum Error {
-	UnknownCommand(String),
-	CommandFailed(String),
-	EmptyCommand,
-}
 
-#[async_trait]
-pub trait Application {
-	fn new() -> Self;
 
-	async fn run(&mut self, _: Vec<String>) -> Result<(), Error> {
-		Ok(())
-	}
-}
+

@@ -15,7 +15,6 @@ use spin::Mutex;
 
 pub mod kernel;
 pub mod std;
-pub mod shell;
 pub mod applications;
 
 extern crate alloc;

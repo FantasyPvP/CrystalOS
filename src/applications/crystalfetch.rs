@@ -7,7 +7,7 @@ use crate::{
         render::{Color, write}
     },
     println,
-    shell::{
+    std::application::{
         Application,
         Error,
     },

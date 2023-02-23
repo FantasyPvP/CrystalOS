@@ -13,7 +13,6 @@ use futures_util::task::AtomicWaker;
 use futures_util::stream::StreamExt;
 use pc_keyboard::{layouts, DecodedKey, HandleControl, Keyboard, ScancodeSet1};
 use crate::print;
-use crate::shell::CMD;
 use crate::kernel::render::RENDERER;
 use alloc::{string::String};
 

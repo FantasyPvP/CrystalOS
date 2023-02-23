@@ -10,7 +10,7 @@ use super::{
 use alloc::{boxed::Box, string::{String, ToString}, vec::Vec, format, borrow::ToOwned};
 
 use crate::{ 
-    shell::{
+    std::application::{
 	    Application,
 	    Error,
     },

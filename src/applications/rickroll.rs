@@ -1,6 +1,6 @@
 use async_trait::async_trait;
 
-use crate::shell::{
+use crate::std::application::{
 	Application,
 	Error,
 };
