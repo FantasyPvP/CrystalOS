@@ -98,7 +98,9 @@ impl Application for GameLoop {
         });
 
 
-        loop {}
+        loop {
+            println!("{}", io::stdchar().await)
+        }
 
         Ok(())
     }

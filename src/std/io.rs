@@ -22,13 +22,10 @@ pub async fn stdchar() -> char {
 }
 
 
-#[derive(Clone, Copy)]
-pub struct Frame {
-    pub frame: [ [ char; BUFFER_WIDTH ]; BUFFER_HEIGHT]
-}
+pub type Frame = [ [ char; BUFFER_WIDTH ]; BUFFER_HEIGHT];
 
 pub fn render_frame(frame: Frame) {
-    RENDERER.lock().render_frame(frame.frame)
+    RENDERER.lock().render_frame(frame)
 }
 
 #[derive(Clone)]
@@ -61,7 +58,7 @@ impl Element {
         for (i, row) in self.frame.iter().enumerate() {
             for (j, col) in row.iter().enumerate() {
                 println!("{} {} {}", i, j, col);
-                FRAMEGEN.lock().frame.frame[i + pos.1 as usize][j + pos.0 as usize] = *col;
+                FRAMEGEN.lock().frame[i + pos.1 as usize][j + pos.0 as usize] = *col;
             };
         }
     }
@@ -97,11 +94,11 @@ impl FrameGen {
             }
         }
 
-        Self { frame: Frame { frame } }
+        Self { frame: Frame::from(frame) }
     }
 
     pub fn get_frame(&self) -> &[ [ char; BUFFER_WIDTH ]; BUFFER_HEIGHT] {
-        &self.frame.frame
+        &self.frame
     }
 
 }
@@ -110,7 +107,7 @@ impl FrameGen {
 impl core::fmt::Display for FrameGen {
     fn fmt(&self, _: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
         println!(" ");
-        for row in &self.frame.frame {
+        for row in &self.frame {
             println!("{}", row.iter().collect::<String>());
         };
         Ok(())
