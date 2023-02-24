@@ -152,26 +152,9 @@ impl App { // name must be the same as the name of the struct
 }
 ```
 
-UPDATE: 21/02/23
- - created a standard library of functions that any application can use
- - implemented a random function to the standard library that can generate random numbers in a range
- - added the print and println macros to be directly accessible from the standard library 
- - added global functions for getting input as a keystroke or from the command line
-```rust
-
-pub async fn stdin() -> String // returns the string inputted by the user
-
-pub async fn stdchar() -> char // returns the next keystroke 
-
-pub fn crate::std::Random::int(min: usize, max: usize) -> usize // returns random integer in range (min <= x <= max)
-
-pub fn crate::std::Random::selection<T: Clone>(list: Vec<T>) -> T // returns random element of vector argument
-```
- - 
 
 
-
-## future plans:
+## future plans (as of initial kernel build jan 2023):
 
 eventually i want to try rewriting the majority of the code for the VGA buffer.
 this is so that i can implement what i'll call a 'sandbox mode' for the screen.
@@ -184,3 +167,38 @@ eventually, this could theoretically lead to a library that was able to support 
 for writing out messages and the capability to theoretically program basic 2d games in an ascii art style
 (something like space invaders, tetris, etc.)
 
+
+
+
+## UPDATE: 21/02/23
+ - created a standard library of functions that any application can use
+ - implemented a random function to the standard library that can generate random numbers in a range
+ - added the print and println macros to be directly accessible from the standard library 
+ - added global functions for getting input as a keystroke or from the command line
+
+```rust
+pub async fn stdin() -> String // returns the string inputted by the user
+
+pub async fn stdchar() -> char // returns the next keystroke 
+
+pub fn crate::std::random::Random::int(min: usize, max: usize) -> usize // returns random integer in range (min <= x <= max)
+
+pub fn crate::std::random::Random::selection<T: Clone>(list: Vec<T>) -> T // returns random element of vector argument
+```
+
+## UPDATE: 23/02/23
+
+### changes
+
+since the last update i did a few things.
+ - refactored the entire codebase, moving the standard library, kernel and applications to
+   separate folders in the source code in order to better organise them
+    - this should make my next goal much more seamless - this goal will be to further abstract the applications
+      from the kernel, essentially there will be a lib crate containing the kernel and standard library
+      in addition to a binary crate which actually has the bootloader / init system / applications etc
+
+ - wrote a basic ASCII rendering engine that can create and place 2d element anywhere on the screen
+    - the elements are placed using a coordinate system where the top left character of the element is
+      placed at that coordinate on the screen
+
+    > std::io::Element

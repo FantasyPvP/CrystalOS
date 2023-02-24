@@ -23,15 +23,16 @@ pub async fn stdchar() -> char {
 
 pub type Frame = [ [ char; BUFFER_WIDTH ]; BUFFER_HEIGHT];
 
-pub fn render_frame(frame: Frame) {
-    RENDERER.lock().render_frame(frame)
-}
-
 #[derive(Clone)]
 pub struct Element {
     frame: Vec<Vec<char>>,
     dimensions: (u8, u8)
 }
+/// elements can be created using their from_str() method
+/// you can then render the element to the current frame using the render() method
+/// the position of the element by passing a tuple (x,y) to render()
+/// 
+/// nothing will appear on the screen until the frame is actually
 impl Element {
     pub fn from_str(elemstr: String) -> Self {
         let mut element = Element { frame: Vec::<Vec<char>>::new(), dimensions: (0, 0) }; 
@@ -77,7 +78,7 @@ pub struct FrameGen {
 
 impl FrameGen {
     pub fn render_frame(&self) {
-        render_frame(self.frame);
+        RENDERER.lock().render_frame(self.frame)
     }
 
     fn new() -> Self {
