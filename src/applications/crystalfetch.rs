@@ -57,6 +57,7 @@ impl Application for CrystalFetch {
 ────────────────────────────────────────────────────────
 ", os, version);
 		Ok(())
+        
 	}
 
 }

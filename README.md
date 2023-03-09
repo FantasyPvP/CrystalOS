@@ -201,4 +201,6 @@ since the last update i did a few things.
     - the elements are placed using a coordinate system where the top left character of the element is
       placed at that coordinate on the screen
 
-    > std::io::Element
+```rust
+    pub struct crate::std::io::Element
+```

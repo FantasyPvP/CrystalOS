@@ -73,11 +73,10 @@ impl Application for GameLoop {
         let mut healthbar = Element::from_str(string);
         healthbar.render((1, 1));
 
-        let new2 = String::from("[eeeeee]");
+        let new2 = String::from("slushy stfu");
         let mut new = Element::from_str(new2);
 
-
-        new.render((10, 10));
+        new.render((10, 20));
 
 
 
