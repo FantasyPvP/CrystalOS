@@ -12,6 +12,25 @@ while I'm waiting for the third edition to release, I guess I'm gonna just have 
 
 - for more details on this project read the wiki ^^^
 
+# Building
+- this project unfortunately does not build on the latest rust versions and requires an older nightly build. 
+the version below (rust v1.68.0-nightly) works:
+> rustup override set nightly-2023-01-01
+  (you may need to install this first)
+> rustup install nightly-2023-01-01
+- you will need the bare metal x86 target installed:
+> rustup target add x86_64-unknown-none
+- you will also need several extra rustup components to build the project
+> rustup component add llvm-tools-preview
+> rustup component add rust-src
+  (ensure that you are installing the components for the correct nightly build)
+- you will also need the bootimage crate which can be installed with the below command:
+> cargo install bootimage
+- the final requirement is having QEMU desktop installed for your system. on linux this comes in the default repositories of most major distributions.
+- finally:
+> cargo run
+
+
 # Features as of Nov 2023
 
 ### barebones standard library with the following general features
