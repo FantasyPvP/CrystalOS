@@ -1,6 +1,6 @@
 use crate::std::application::Error;
 use crate::std::application::Error::ApplicationError;
-use crate::std::render::{ColouredChar, Dimensions, Frame, Position, RenderError};
+use crate::std::render::{ColouredChar, Dimensions, Frame, Position, RenderError, Window};
 use crate::std::io::{Color, ColorCode, Display, KeyStroke, Stdin};
 use crate::std::random::Random;
 use crate::system::std::application::Application;
@@ -52,7 +52,7 @@ impl Application for Game {
             timer: GameTimer::new(),
         }
     }
-    async fn run(&mut self, _args: Vec<String>) -> Result<(), Error> {
+    async fn run(&mut self, window: Option<Window>, _args: Vec<String>) -> Result<(), Error> {
         let _d = Display::borrow();
 
         let mut container_data =

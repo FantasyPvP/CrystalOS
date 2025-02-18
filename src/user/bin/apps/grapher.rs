@@ -5,7 +5,7 @@ use alloc::boxed::Box;
 use core::any::Any;
 use async_trait::async_trait;
 use crate::std::application::{Application, Error};
-use crate::std::render::{Frame, Position, Dimensions, ColouredChar, RenderError};
+use crate::std::render::{ColouredChar, Dimensions, Frame, Position, RenderError, Window};
 use crate::std::io::{Display, KeyStroke, Stdin};
 
 use crate::user::lib::libgui::{
@@ -49,7 +49,7 @@ impl Application for Grapher {
             frame: Frame::new(Position::new(1, 1), Dimensions::new(78, 22)).unwrap()
         }
     }
-    async fn run(&mut self, args: Vec<String>) -> Result<(), Error> {
+    async fn run(&mut self, window: Option<Window>, args: Vec<String>) -> Result<(), Error> {
         let _d = Display::borrow();
 
         self.frame.frame = vec![vec![ColouredChar::new(' '); self.frame.dimensions.x]; self.frame.dimensions.y];

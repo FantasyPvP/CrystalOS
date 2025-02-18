@@ -4,7 +4,7 @@ use async_trait::async_trait;
 use crate::std::io::{Color, Display, KeyStroke, Stdin};
 use crate::std::time;
 use crate::std::application::{Application, Error};
-use crate::std::render::{ColouredChar, Dimensions, Frame, RenderError, ColorCode};
+use crate::std::render::{ColorCode, ColouredChar, Dimensions, Frame, RenderError, Window};
 use crate::std::random::Random;
 use crate::system::std::render;
 use super::super::super::lib::geometry::{Position, Direction};
@@ -45,7 +45,7 @@ impl Application for Game {
         }
     }
 
-    async fn run(&mut self, args: Vec<String>) -> Result<(), Error> {
+    async fn run(&mut self, window: Option<Window>, args: Vec<String>) -> Result<(), Error> {
 
         let _settings = [0, 0, 0]; // ai_count, snake_len, poi_count
 

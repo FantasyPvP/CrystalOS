@@ -2,9 +2,7 @@ use async_trait::async_trait;
 use alloc::{boxed::Box, format, string::String, vec::Vec};
 
 use crate::std::{
-	os::OS,
-	io::{Color, write, Screen},
-	application::{Application, Error},
+	application::{Application, Error}, io::{write, Color, Display}, os::OS, render::Window
 };
 use crate::println;
 
@@ -55,12 +53,15 @@ impl Application for CrystalFetch {
 		Self {}
 	}
 
-	async fn run(&mut self, _args: Vec<String>) -> Result<(), Error> {
+	async fn run(&mut self, window: Option<Window>, _args: Vec<String>) -> Result<(), Error> {
+
+    let ds = Display::borrow();
 
 		let os = OS.lock().os.clone();
 		let version = OS.lock().version.clone();
 
-		Screen::clear();
+    // clear screen
+    Display::clear();
 
 		let logo_string = ZXQ5_LOGO;
 		let info_string = format!(

@@ -1,7 +1,7 @@
 use alloc::{string::String, vec::Vec, boxed::Box};
 use async_trait::async_trait;
 
-use crate::{std::{application::{Application, Error}, io::{Color, Display, KeyStroke, Stdin}, random::Random, render::{ColorCode, ColouredChar, Dimensions, Frame, Position, RenderError}, time}, user::lib::libgui::cg_core::CgComponent};
+use crate::{std::{application::{Application, Error}, io::{Color, Display, KeyStroke, Stdin}, random::Random, render::{ColorCode, ColouredChar, Dimensions, Frame, Position, RenderError, Window}, time}, user::lib::libgui::cg_core::CgComponent};
 
 pub struct Game {
     pub board: [[Cell; 7]; 6],
@@ -31,7 +31,7 @@ impl Application for Game {
         }
     }
 
-    async fn run(&mut self, _: Vec<String>) -> Result<(), Error> {
+    async fn run(&mut self, window: Option<Window>, _: Vec<String>) -> Result<(), Error> {
         let _display = Display::borrow();
         
         self.get_next_mode().await;

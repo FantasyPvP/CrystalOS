@@ -3,10 +3,10 @@ use alloc::{boxed::Box, string::String, vec::Vec};
 
 use crate::{
     println,
-    std::application::{
+    std::{application::{
         Application,
         Error,
-    },
+    }, render::Window},
 };
 
 const GIGACHAD: [&'static str; 3] = ["fantasypvp", "zxq5", "ZXQ5"];
@@ -19,7 +19,7 @@ impl Application for GigachadDetector {
         Self {}
     }
 
-    async fn run(&mut self, args: Vec<String>) -> Result<(), Error> {
+    async fn run(&mut self, window: Option<Window>, args: Vec<String>) -> Result<(), Error> {
         for arg in args {
             self.detect_gigachad_by_username(&arg)
         }

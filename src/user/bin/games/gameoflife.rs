@@ -4,7 +4,7 @@ use alloc::vec::Vec;
 use alloc::boxed::Box;
 use crate::std::application::{Application, Error};
 use async_trait::async_trait;
-use crate::std::render::{ColouredChar, Frame, Position, Dimensions, RenderError};
+use crate::std::render::{ColouredChar, Dimensions, Frame, Position, RenderError, Window};
 use crate::std::io::{KeyStroke, Stdin, Color, ColorCode, Display};
 use crate::std::time::wait;
 
@@ -21,7 +21,7 @@ impl Application for GameOfLife {
             frame: Frame::new(Position::new(0, 0), Dimensions::new(80, 25)).unwrap()
         }
     }
-    async fn run(&mut self, _args: Vec<String>) -> Result<(), Error> {
+    async fn run(&mut self, window: Option<Window>, _args: Vec<String>) -> Result<(), Error> {
         // setup:
         let _d = Display::borrow();
 

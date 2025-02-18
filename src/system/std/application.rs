@@ -1,11 +1,13 @@
 use async_trait::async_trait;
 use alloc::{string::String, vec::Vec, boxed::Box};
 
+use super::render::Window;
+
 #[async_trait]
 pub trait Application {
 	fn new() -> Self;
 
-	async fn run(&mut self, _: Vec<String>) -> Result<(), Error> {
+	async fn run(&mut self, _window: Option<Window>, _args: Vec<String>) -> Result<(), Error> {
 		Ok(())
 	}
 }
