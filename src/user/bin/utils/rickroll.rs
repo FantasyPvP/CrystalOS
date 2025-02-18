@@ -44,6 +44,7 @@ const RICKROLL2: &str = "
                                                                      `--'";
 
 use crate::println;
+use crate::std::render::Window;
 use alloc::{string::String, boxed::Box, vec::Vec};
 
 
@@ -55,7 +56,7 @@ impl Application for Rickroll {
 		Self {}
 	}
 
-	async fn run(&mut self, _args: Vec<String>) -> Result<(), Error> {
+	async fn run(&mut self, window: Option<Window>, _args: Vec<String>) -> Result<(), Error> {
 		println!("{}", RICKROLL2);
 		Ok(())
 	}

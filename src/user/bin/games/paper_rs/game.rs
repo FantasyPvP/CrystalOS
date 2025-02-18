@@ -8,7 +8,7 @@ use crate::{
         self, 
         application::{Application, Error}, 
         io::{Color, ColorCode, Display, KeyStroke, Stdin}, 
-        render::{ColouredChar, Dimensions, Frame, Position, RenderError}, 
+        render::{ColouredChar, Dimensions, Frame, Position, RenderError, Window}, 
         time
     }, 
     user::lib::libgui::cg_core::CgComponent
@@ -49,7 +49,7 @@ impl Application for GameBoard {
         }
     }
 
-    async fn run(&mut self, _args: Vec<String>) -> Result<(), Error> {
+    async fn run(&mut self, window: Option<Window>, _args: Vec<String>) -> Result<(), Error> {
         let _display = Display::borrow();
 
         'outer: loop {

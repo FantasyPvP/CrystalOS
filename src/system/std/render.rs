@@ -21,6 +21,53 @@ pub use crate::system::kernel::render::{
     BUFFER_HEIGHT
 };
 
+pub struct Window {
+    width: u32,
+    height: u32,
+    x: u32,
+    y: u32,
+    bordered: bool,
+    open: bool,
+}
+
+impl Window {
+    pub fn new() -> Window {
+        Window {
+            width: BUFFER_WIDTH as u32,
+            height: BUFFER_HEIGHT as u32,
+            x: 0,
+            y: 0,
+            bordered: true,
+            open: true
+        }
+    }
+
+    pub fn open(&mut self) -> Result<(), RenderError> {
+        if self.open {
+            return Err(RenderError::InvalidRenderMode);
+        }
+        self.open = true;
+
+        let mut frame: [[ScreenChar; BUFFER_WIDTH]; BUFFER_HEIGHT] = [[ScreenChar::null(); BUFFER_WIDTH]; BUFFER_HEIGHT];
+
+
+        Ok(())
+    }
+
+    // pub fn render(&self, f: &Frame) -> Result<(), RenderError> {
+    //     let mut frame: &[[ScreenChar; self.width]; self.height] = &[[ScreenChar::null(); self.width]; self.height];
+        
+        
+        
+    //     for (i, row) in f.frame.iter().enumerate() {
+    //         for (j, col) in row.iter().enumerate() {
+    //             frame[i + f.position.y][j + f.position.x] = col.as_screen_char();
+    //         };
+    //     }
+    //     RENDERER.lock().render_frame(frame);
+    //     Ok(())
+    // }
+}
 
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub struct ColouredChar {
@@ -117,6 +164,14 @@ impl Frame {
         })
     }
 
+    pub fn from_window(window: &Window) -> Frame {
+        Frame {
+            dimensions: Dimensions::new(window.width as usize, window.height as usize),
+            position: Position::new(window.x as usize, window.y as usize),
+            frame: vec![vec![ColouredChar::null(); window.width as usize]; window.height as usize],
+        }
+    }
+
     pub fn from_str(elemstr: String) -> Self {
         let mut element = Frame { frame: Vec::<Vec<ColouredChar>>::new(), dimensions: Dimensions::new(0, 0), position: Position::new(0, 0) };
 
@@ -141,6 +196,7 @@ impl Frame {
         self.frame.clone()
     }
 
+    /// DEPRECATED. Use Window::render(&Frame) instead !!
     pub fn write_to_screen(&self) -> Result<(), RenderError> {
         let mut frame: [[ScreenChar; BUFFER_WIDTH]; BUFFER_HEIGHT] = [[ScreenChar::null(); BUFFER_WIDTH]; BUFFER_HEIGHT];
         for (i, row) in self.frame.iter().enumerate() {
@@ -151,6 +207,7 @@ impl Frame {
         RENDERER.lock().render_frame(frame);
         Ok(())
     }
+
     pub fn get_position(&self) -> Position<usize> {
         self.position
     }

@@ -2,6 +2,7 @@ use core::fmt;
 use alloc::{boxed::Box, format, string::String, vec::Vec};
 use alloc::string::ToString;
 use alloc::borrow::ToOwned;
+use crate::std::render::Window;
 use crate::{println, print, mknode, std, serial_println};
 
 use async_trait::async_trait;
@@ -361,7 +362,7 @@ impl Application for Calculator {
 		Self {}
 	}
 
-	async fn run(&mut self, args: Vec<String>) -> Result<(), ShellError> {
+	async fn run(&mut self, window: Option<Window>, args: Vec<String>) -> Result<(), ShellError> {
 		if args.len() == 0 {
 			loop {
 				print!("enter equation > ");

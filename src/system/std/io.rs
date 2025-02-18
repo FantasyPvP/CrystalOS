@@ -48,46 +48,10 @@ impl Serial {
     }
 }
 
-/// enum with a terminal and application mode
-pub enum Screen {
-    Terminal,
-    Application,
-}
-
-/// DEPRECATED - STOP USING THIS SOON
-impl Screen {
-    /// mode can be set for the kernel using this method
-    // pub fn set_mode(&self) -> Result<(), RenderError> {
-    //     Ok(match self {
-    //         Screen::Terminal => RENDERER.lock().terminal_mode(),
-    //         Screen::Application => RENDERER.lock().application_mode(),
-    //     })
-    // }
-
-    /// returns the current display mode
-    pub fn get_mode() -> Screen {
-        match RENDERER.lock().mode_is_app() {
-            true => Screen::Application,
-            false => Screen::Terminal,
-        }
-    }
-
-    /// switches between modes
-    pub fn switch(&self) {
-        if RENDERER.lock().mode_is_app() == true {
-            RENDERER.lock().terminal_mode();
-        } else {
-            RENDERER.lock().application_mode();
-        }
-    }
-    pub fn clear() {
-        RENDERER.lock().clear();
-    }
-}
-
 /// An interface that tells the kernel what rendering mode to use
 /// Creating an instance of this struct will enable application rendering mode
 /// Dropping the instance will return the display to focus on the terminal.
+/// this will be deprecated in the near future !!
 pub struct Display;
 
 impl Display {
@@ -98,6 +62,10 @@ impl Display {
 
     pub fn mv_cursor(&self, x: u8, y: u8) -> Result<(), RenderError> {
         RENDERER.lock().cursor_position(x, y)
+    }
+
+    pub fn clear() {
+        RENDERER.lock().clear();
     }
 }
 

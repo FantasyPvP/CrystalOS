@@ -4,6 +4,7 @@ use crate::std::application::{
 	Error
 };
 use crate::println;
+use crate::std::render::Window;
 use lazy_static::lazy_static;
 use spin::Mutex;
 use async_trait::async_trait;
@@ -27,7 +28,7 @@ pub struct Tasks;
 impl Application for Tasks {
 	fn new() -> Self { Self {} }
 
-	async fn run(&mut self, args: Vec<String>) -> Result<(), Error> {
+	async fn run(&mut self, window: Option<Window>, args: Vec<String>) -> Result<(), Error> {
 
 		if args[0].clone() == String::from("add") {
 

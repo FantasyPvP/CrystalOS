@@ -1,7 +1,7 @@
 use crate::{serial_println, std};
 use crate::std::application::{self, Application};
 use crate::std::io::{Color, ColorCode, Display, KeyStroke};
-use crate::std::render::{ColouredChar, Frame, Position, RenderError};
+use crate::std::render::{ColouredChar, Frame, Position, RenderError, Window};
 use crate::user::lib::libgui::cg_core::CgComponent;
 
 
@@ -169,7 +169,7 @@ impl Application for Editor {
         }
     }
 
-    async fn run(&mut self, _args: Vec<String>) -> Result<(), application::Error> {
+    async fn run(&mut self, window: Option<Window>, _args: Vec<String>) -> Result<(), application::Error> {
 
         // if let Some(s) = args.get(0) {
         //     self.buffer = s.lines().map(|l| l.chars().collect()).collect::<Vec<Vec<char>>>()

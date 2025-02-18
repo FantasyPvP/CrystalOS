@@ -18,15 +18,9 @@ use crate::{
     printerr,
     println,
     std::{
-        application::{Application, Error, Exit},
-        time::{timer},
-        io::{Color, write, Screen, Stdin, Serial, KeyStroke, Display},
+        application::{Application, Error, Exit}, io::{write, Color, Display, KeyStroke, Serial, Stdin}, render::Window, time::timer
     },
     user::{
-        lib::libgui::{
-            cg_core::{CgComponent, CgKeyboardCapture},
-            cg_widgets::CgDialog,
-        },
         bin::{
             apps::{
                 calc::Calculator,
@@ -48,7 +42,10 @@ use crate::{
                 gigachad_detector::GigachadDetector,
                 rickroll::Rickroll,
             },
-        },
+        }, lib::libgui::{
+            cg_core::{CgComponent, CgKeyboardCapture},
+            cg_widgets::CgDialog,
+        }
     },
 };
 
@@ -67,11 +64,13 @@ pub async fn command_handler() {
 pub async fn eventloop() {
     println!("running!");
 
+    let window = Window::new();
+
     let mut fetch = CrystalFetch::new();
     let string = String::from(" ");
     let mut vec: Vec<String> = Vec::new();
     vec.push(string);
-    fetch.run(vec).await.unwrap();
+    fetch.run(Some(window), vec).await.unwrap();
 
     CMD.lock().prompt();
 
@@ -122,29 +121,31 @@ async fn exec() -> Result<(), Error> {
         }
     };
 
+    let window = Window::new();
+
     match cmd.as_str() {
         "calculate" | "calc" | "solve" => {
             let mut cmd = Calculator::new();
-            cmd.run(args).await?;
+            cmd.run(Some(window), args).await?;
         }
 
         "games/connect4" => {
             let mut cmd = Connect4Game::new();
-            cmd.run(args).await?;
+            cmd.run(Some(window), args).await?;
         }
 
         "rickroll" => {
             let mut cmd = Rickroll::new();
-            cmd.run(args).await?;
+            cmd.run(Some(window), args).await?;
         }
 
         "crystalfetch" => {
             let mut cmd = CrystalFetch::new();
-            cmd.run(args).await?;
+            cmd.run(Some(window), args).await?;
         }
         "tasks" => {
             let mut cmd = Tasks::new();
-            cmd.run(args).await?;
+            cmd.run(Some(window), args).await?;
         }
         "VGA" => {
             use vga::colors::Color16;
@@ -156,21 +157,21 @@ async fn exec() -> Result<(), Error> {
             mode.draw_line((80, 60), (120, 420), Color16::Cyan);
         }
         "graph" => {
-            Grapher::new().run(args).await?;
+            Grapher::new().run(Some(window), args).await?;
         }
         "games/snake" => {
-            SnakeGame::new().run(args).await?;
+            SnakeGame::new().run(Some(window), args).await?;
         }
         "games/asteroids" => {
             let mut asteroid_game = AsteroidsGame::new();
-            asteroid_game.run(args).await?;
+            asteroid_game.run(Some(window), args).await?;
         }
         "games/pong" => {
-            PongGame::new().run(args).await?;
+            PongGame::new().run(Some(window), args).await?;
         }
         "games/paper.rs" => {
             let mut game = GameBoard::new();
-            game.run(args).await?;
+            game.run(Some(window), args).await?;
         }
         "serial" => {
             let c = Serial::reply_char('e');
@@ -178,7 +179,7 @@ async fn exec() -> Result<(), Error> {
         }
         "games/gameoflife" => {
             let mut game = GameOfLife::new();
-            game.run(Vec::new()).await?;
+            game.run(Some(window), Vec::new()).await?;
         }
         "games/tetris" => {
             // let mut game = TetrisEngine::new();
@@ -187,12 +188,12 @@ async fn exec() -> Result<(), Error> {
 
         "gigachad?" => {
             let mut detector = GigachadDetector::new();
-            detector.run(args).await?;
+            detector.run(Some(window), args).await?;
         }
 
         "editor" => {
             let mut editor = Editor::new();
-            editor.run(args).await?;
+            editor.run(Some(window), args).await?;
         }
 
         // direct OS functions (not applications)
@@ -208,7 +209,7 @@ async fn exec() -> Result<(), Error> {
             )
         }
         "clear" => {
-            Screen::clear();
+            Display::clear();
             // not sure why this code was here but leaving it in case weird bugs happen so i remember to add it back if so
             //interrupts::without_interrupts(|| {});
         }
