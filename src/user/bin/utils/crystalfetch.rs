@@ -59,6 +59,7 @@ impl Application for CrystalFetch {
 
 		let os = OS.lock().os.clone();
 		let version = OS.lock().version.clone();
+		let git_url = OS.lock().url.clone();
 
     // clear screen
     Display::clear();
@@ -67,9 +68,9 @@ impl Application for CrystalFetch {
 		let info_string = format!(
 " [   OS      »  {}
  [   BUILD   »  {}
- [   Shell   »  CrySH
- [   Github  »  https://github.com/FantasyPvP/CrystalOS
- [   Author  »  ZXQ5", os, version);
+ [   Shell   »  ZxqSH
+ [   Git     »  {}
+ [   Author  »  ZXQ5", os, version, git_url);
 
 		// write to output
 		let spacer = "\n".repeat(25 - logo_string.lines().count() - 4 - info_string.lines().count());

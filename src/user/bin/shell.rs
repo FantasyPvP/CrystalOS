@@ -273,7 +273,7 @@ impl CommandHandler {
     // TODO: coloured prompt
 
     pub fn prompt(&self) {
-        write(format_args!("\n Crystal> "), (Color::Cyan, Color::Black));
+        write(format_args!("\n <Zxq5/> "), (Color::Cyan, Color::Black));
     }
 }
 
